@@ -25,11 +25,11 @@ export function Hero() {
       >
         <motion.h1
           variants={item}
-          className="text-6xl font-semibold tracking-tightest text-white md:text-8xl"
+          className="text-shadow-dark text-6xl font-semibold tracking-tightest text-white md:text-8xl"
         >
           Duan Jesus
         </motion.h1>
-        <motion.p variants={item} className="mt-5 text-2xl font-medium text-white/50 md:text-3xl">
+        <motion.p variants={item} className="text-shadow-dark mt-5 text-2xl font-medium text-white/50 md:text-3xl">
           Java Backend Developer
         </motion.p>
         <motion.p

@@ -22,7 +22,7 @@ export function TechStack() {
         className="mt-10 grid grid-cols-2 gap-x-6 gap-y-10 text-center sm:grid-cols-4"
       >
         {techStack.map((item) => (
-          <div key={item.name} className="text-2xl font-medium tracking-tight text-ink md:text-3xl">
+          <div key={item.name} className="text-shadow-light text-2xl font-medium tracking-tight text-ink md:text-3xl">
             {item.name}
           </div>
         ))}

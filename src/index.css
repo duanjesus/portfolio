@@ -15,3 +15,13 @@
     @apply bg-ink text-paper;
   }
 }
+
+@layer utilities {
+  .text-shadow-dark {
+    text-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+  }
+
+  .text-shadow-light {
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+}

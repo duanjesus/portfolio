@@ -36,7 +36,9 @@ export function CaseStudy() {
           className="mx-auto mt-10 max-w-2xl text-center"
         >
           <div className="text-4xl">{project.emoji}</div>
-          <h1 className="mt-4 text-5xl font-semibold tracking-tight text-white md:text-6xl">{project.name}</h1>
+          <h1 className="text-shadow-dark mt-4 text-5xl font-semibold tracking-tight text-white md:text-6xl">
+            {project.name}
+          </h1>
           <p className="mt-4 text-xl text-white/60">{project.tagline}</p>
           <div className="mt-8">
             <Button href={project.githubUrl} variant="secondary" size="sm" tone="dark">

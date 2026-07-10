@@ -24,7 +24,11 @@ export function ProjectCard({ project, tone }: ProjectCardProps) {
         className="mx-auto max-w-2xl text-center"
       >
         <div className="text-4xl">{project.emoji}</div>
-        <h3 className={`mt-4 text-4xl font-semibold tracking-tight md:text-5xl ${isDark ? "text-white" : "text-ink"}`}>
+        <h3
+          className={`mt-4 text-4xl font-semibold tracking-tight md:text-5xl ${
+            isDark ? "text-shadow-dark text-white" : "text-shadow-light text-ink"
+          }`}
+        >
           {project.name}
         </h3>
         <p className={`mt-4 text-lg md:text-xl ${isDark ? "text-white/60" : "text-ink/60"}`}>{project.tagline}</p>

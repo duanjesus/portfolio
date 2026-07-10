@@ -35,11 +35,11 @@ export function GithubActivity() {
       {status === "ready" && stats && (
         <div className="mx-auto mt-12 grid max-w-3xl grid-cols-2 gap-6 text-center sm:grid-cols-3">
           <div>
-            <p className="text-4xl font-semibold tracking-tight text-white">{stats.publicRepoCount}</p>
+            <p className="text-shadow-dark text-4xl font-semibold tracking-tight text-white">{stats.publicRepoCount}</p>
             <p className="mt-1 text-sm text-white/40">Public repos</p>
           </div>
           <div>
-            <p className="text-4xl font-semibold tracking-tight text-white">{stats.totalStars}</p>
+            <p className="text-shadow-dark text-4xl font-semibold tracking-tight text-white">{stats.totalStars}</p>
             <p className="mt-1 text-sm text-white/40">Stars</p>
           </div>
           <div className="col-span-2 sm:col-span-1">
