@@ -3,8 +3,13 @@ import { Section } from "../components/layout/Section";
 import { ProjectCard } from "../components/ui/ProjectCard";
 import { projects } from "../data/projects";
 import type { Tone } from "../components/layout/Section";
+import { useLocale } from "../i18n/locale";
+import { strings } from "../i18n/strings";
 
 export function FeaturedProjects() {
+  const locale = useLocale();
+  const t = strings[locale].featuredProjects;
+
   return (
     <>
       {projects.map((project, index) => {
@@ -19,7 +24,7 @@ export function FeaturedProjects() {
                 transition={{ duration: 0.5 }}
                 className="mb-16 text-center text-sm font-semibold uppercase tracking-widest text-white/40"
               >
-                Featured Projects
+                {t.eyebrow}
               </motion.p>
             )}
             <ProjectCard project={project} tone={tone} />

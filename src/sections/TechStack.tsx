@@ -1,8 +1,13 @@
 import { motion } from "framer-motion";
 import { Section } from "../components/layout/Section";
 import { techStack } from "../data/techStack";
+import { useLocale } from "../i18n/locale";
+import { strings } from "../i18n/strings";
 
 export function TechStack() {
+  const locale = useLocale();
+  const t = strings[locale].techStack;
+
   return (
     <Section tone="light">
       <motion.p
@@ -12,7 +17,7 @@ export function TechStack() {
         transition={{ duration: 0.5 }}
         className="text-center text-sm font-semibold uppercase tracking-widest text-ink/40"
       >
-        Tech Stack
+        {t.eyebrow}
       </motion.p>
       <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
         {techStack.map((item, index) => (

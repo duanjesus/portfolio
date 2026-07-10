@@ -6,6 +6,8 @@ import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
 import { BrowserFrame } from "../components/ui/BrowserFrame";
 import { getProjectBySlug } from "../data/projects";
+import { useLocale } from "../i18n/locale";
+import { strings } from "../i18n/strings";
 
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
@@ -17,17 +19,21 @@ const fadeUp = {
 export function CaseStudy() {
   const { slug } = useParams<{ slug: string }>();
   const project = getProjectBySlug(slug);
+  const locale = useLocale();
+  const t = strings[locale].caseStudy;
 
-  if (!project) return <Navigate to="/" replace />;
+  if (!project) return <Navigate to={locale === "en" ? "/" : "/pt"} replace />;
 
-  const { caseStudy } = project;
+  const content = project.content[locale];
+  const { caseStudy } = content;
+  const projectsHref = locale === "en" ? "/#projects" : "/pt#projects";
 
   return (
     <article>
       <Section tone="dark" className="pt-32 pb-20 md:pt-40">
-        <Button to="/#projects" variant="ghost" size="sm" tone="dark" className="!px-0">
+        <Button to={projectsHref} variant="ghost" size="sm" tone="dark" className="!px-0">
           <ArrowLeft size={16} />
-          Back to projects
+          {t.back}
         </Button>
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -39,11 +45,11 @@ export function CaseStudy() {
           <h1 className="text-shadow-dark mt-4 text-5xl font-semibold tracking-tight text-white md:text-6xl">
             {project.name}
           </h1>
-          <p className="mt-4 text-xl text-white/60">{project.tagline}</p>
+          <p className="mt-4 text-xl text-white/60">{content.tagline}</p>
           <div className="mt-8">
             <Button href={project.githubUrl} variant="secondary" size="sm" tone="dark">
               <Github size={16} />
-              View on GitHub
+              {t.viewOnGithub}
             </Button>
           </div>
         </motion.div>
@@ -57,17 +63,17 @@ export function CaseStudy() {
 
       <Section tone="light" narrow>
         <motion.div {...fadeUp}>
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-ink/40">Problem</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-widest text-ink/40">{t.problem}</h2>
           <p className="mt-4 text-lg leading-relaxed text-ink/80">{caseStudy.problem}</p>
         </motion.div>
 
         <motion.div {...fadeUp} className="mt-16">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-ink/40">Solution</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-widest text-ink/40">{t.solution}</h2>
           <p className="mt-4 text-lg leading-relaxed text-ink/80">{caseStudy.solution}</p>
         </motion.div>
 
         <motion.div {...fadeUp} className="mt-16">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-ink/40">Architecture</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-widest text-ink/40">{t.architecture}</h2>
           <p className="mt-4 text-lg leading-relaxed text-ink/80">{caseStudy.architecture}</p>
           {project.screenshots.length > 1 && (
             <div className="mt-8 grid gap-6 sm:grid-cols-2">
@@ -79,16 +85,16 @@ export function CaseStudy() {
         </motion.div>
 
         <motion.div {...fadeUp} className="mt-16">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-ink/40">Tech Stack</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-widest text-ink/40">{t.techStack}</h2>
           <div className="mt-4 flex flex-wrap gap-2">
-            {caseStudy.techStack.map((tech) => (
+            {project.caseStudyTechStack.map((tech) => (
               <Badge key={tech}>{tech}</Badge>
             ))}
           </div>
         </motion.div>
 
         <motion.div {...fadeUp} className="mt-16">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-ink/40">Challenges</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-widest text-ink/40">{t.challenges}</h2>
           <div className="mt-4 space-y-6">
             {caseStudy.challenges.map((challenge) => (
               <div key={challenge.title}>
@@ -100,7 +106,7 @@ export function CaseStudy() {
         </motion.div>
 
         <motion.div {...fadeUp} className="mt-16">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-ink/40">Lessons Learned</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-widest text-ink/40">{t.lessonsLearned}</h2>
           <ul className="mt-4 space-y-3">
             {caseStudy.lessonsLearned.map((lesson) => (
               <li key={lesson} className="flex gap-3 leading-relaxed text-ink/70">

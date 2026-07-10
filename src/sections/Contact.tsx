@@ -1,26 +1,31 @@
 import { motion } from "framer-motion";
 import { Github, Linkedin, Mail, MessageCircle, FileDown } from "lucide-react";
 import { Section } from "../components/layout/Section";
-
-const links = [
-  {
-    label: "Email",
-    value: "duanjesus30@gmail.com",
-    href: "mailto:duanjesus30@gmail.com",
-    icon: Mail,
-  },
-  {
-    label: "GitHub",
-    value: "@duanjesus",
-    href: "https://github.com/duanjesus",
-    icon: Github,
-  },
-  { label: "LinkedIn", value: "/in/duan-jesus", href: "https://www.linkedin.com/in/duan-jesus/", icon: Linkedin },
-  { label: "WhatsApp", value: "(21) 96405-6742", href: "https://wa.me/5521964056742", icon: MessageCircle },
-  { label: "Resume", value: "Download PDF", href: "/resume.pdf", icon: FileDown },
-];
+import { useLocale } from "../i18n/locale";
+import { strings } from "../i18n/strings";
 
 export function Contact() {
+  const locale = useLocale();
+  const t = strings[locale].contact;
+
+  const links = [
+    {
+      label: "Email",
+      value: "duanjesus30@gmail.com",
+      href: "mailto:duanjesus30@gmail.com",
+      icon: Mail,
+    },
+    {
+      label: "GitHub",
+      value: "@duanjesus",
+      href: "https://github.com/duanjesus",
+      icon: Github,
+    },
+    { label: "LinkedIn", value: "/in/duan-jesus", href: "https://www.linkedin.com/in/duan-jesus/", icon: Linkedin },
+    { label: "WhatsApp", value: "(21) 96405-6742", href: "https://wa.me/5521964056742", icon: MessageCircle },
+    { label: t.resumeLabel, value: t.resumeValue, href: "/resume.pdf", icon: FileDown },
+  ];
+
   return (
     <Section id="contact" tone="light">
       <motion.div
@@ -30,10 +35,8 @@ export function Contact() {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="text-center"
       >
-        <p className="text-sm font-semibold uppercase tracking-widest text-ink/40">Contact</p>
-        <p className="mx-auto mt-4 max-w-xl text-xl text-ink/70">
-          Open to backend and full-stack roles. The fastest way to reach me is email.
-        </p>
+        <p className="text-sm font-semibold uppercase tracking-widest text-ink/40">{t.eyebrow}</p>
+        <p className="mx-auto mt-4 max-w-xl text-xl text-ink/70">{t.subtitle}</p>
       </motion.div>
       <div className="mx-auto mt-12 grid max-w-3xl gap-4 sm:grid-cols-2">
         {links.map(({ label, value, href, icon: Icon }, index) => (

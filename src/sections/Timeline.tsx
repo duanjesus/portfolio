@@ -1,7 +1,11 @@
 import { motion } from "framer-motion";
 import { timeline } from "../data/timeline";
+import { useLocale } from "../i18n/locale";
 
 export function Timeline() {
+  const locale = useLocale();
+  const items = timeline[locale];
+
   return (
     <div className="relative pl-8">
       <motion.div
@@ -13,7 +17,7 @@ export function Timeline() {
         className="absolute left-0 top-2 h-full w-px bg-ink/10"
       />
       <ol>
-        {timeline.map((item, index) => (
+        {items.map((item, index) => (
           <motion.li
             key={item.year}
             initial={{ opacity: 0, x: -12 }}

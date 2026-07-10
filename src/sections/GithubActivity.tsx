@@ -1,9 +1,13 @@
 import { motion } from "framer-motion";
 import { Section } from "../components/layout/Section";
 import { useGithubStats } from "../hooks/useGithubStats";
+import { useLocale } from "../i18n/locale";
+import { strings } from "../i18n/strings";
 
 export function GithubActivity() {
   const { stats, status, username } = useGithubStats();
+  const locale = useLocale();
+  const t = strings[locale].githubActivity;
 
   return (
     <Section tone="dark">
@@ -14,7 +18,7 @@ export function GithubActivity() {
         transition={{ duration: 0.5 }}
         className="text-center text-sm font-semibold uppercase tracking-widest text-white/40"
       >
-        GitHub Activity
+        {t.eyebrow}
       </motion.p>
 
       <motion.div
@@ -36,14 +40,14 @@ export function GithubActivity() {
         <div className="mx-auto mt-12 grid max-w-3xl grid-cols-2 gap-6 text-center sm:grid-cols-3">
           <div>
             <p className="text-shadow-dark text-4xl font-semibold tracking-tight text-white">{stats.publicRepoCount}</p>
-            <p className="mt-1 text-sm text-white/40">Public repos</p>
+            <p className="mt-1 text-sm text-white/40">{t.publicRepos}</p>
           </div>
           <div>
             <p className="text-shadow-dark text-4xl font-semibold tracking-tight text-white">{stats.totalStars}</p>
-            <p className="mt-1 text-sm text-white/40">Stars</p>
+            <p className="mt-1 text-sm text-white/40">{t.stars}</p>
           </div>
           <div className="col-span-2 sm:col-span-1">
-            <p className="text-sm text-white/40">Top languages</p>
+            <p className="text-sm text-white/40">{t.topLanguages}</p>
             <p className="mt-2 text-sm font-medium text-white/80">
               {stats.topLanguages.map((entry) => entry.language).join(" · ") || "—"}
             </p>
@@ -53,11 +57,11 @@ export function GithubActivity() {
 
       {status === "error" && (
         <p className="mt-10 text-center text-sm text-white/40">
-          Live stats are temporarily unavailable — check{" "}
+          {t.errorPrefix}{" "}
           <a href={`https://github.com/${username}`} className="underline" target="_blank" rel="noreferrer">
             github.com/{username}
           </a>{" "}
-          directly.
+          {t.errorSuffix}
         </p>
       )}
     </Section>
