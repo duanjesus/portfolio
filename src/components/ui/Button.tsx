@@ -3,11 +3,13 @@ import { Link } from "react-router-dom";
 
 type Variant = "primary" | "secondary" | "ghost";
 type Size = "sm" | "md";
+type Tone = "light" | "dark";
 
 interface BaseProps {
   children: ReactNode;
   variant?: Variant;
   size?: Size;
+  tone?: Tone;
   className?: string;
 }
 
@@ -23,19 +25,33 @@ interface ButtonAsRouterLinkProps extends BaseProps {
 
 type ButtonProps = ButtonAsLinkProps | ButtonAsRouterLinkProps;
 
-const variantClasses: Record<Variant, string> = {
-  primary: "bg-ink text-paper hover:bg-ink/85",
-  secondary: "border border-ink/15 text-ink hover:border-ink/30 hover:bg-ink/[0.03]",
-  ghost: "text-ink/70 hover:text-ink",
+const variantClasses: Record<Tone, Record<Variant, string>> = {
+  light: {
+    primary: "bg-ink text-white hover:bg-ink/85",
+    secondary: "border border-ink/15 text-ink hover:border-ink/30 hover:bg-ink/[0.03]",
+    ghost: "text-ink/70 hover:text-ink",
+  },
+  dark: {
+    primary: "bg-white text-ink hover:bg-white/85",
+    secondary: "border border-white/20 text-white hover:border-white/40 hover:bg-white/5",
+    ghost: "text-white/70 hover:text-white",
+  },
 };
 
 const sizeClasses: Record<Size, string> = {
   sm: "px-4 py-2 text-sm",
-  md: "px-5 py-2.5 text-sm",
+  md: "px-6 py-3 text-[15px]",
 };
 
-export function Button({ children, variant = "primary", size = "md", className = "", ...props }: ButtonProps) {
-  const classes = `inline-flex items-center justify-center gap-2 rounded-full font-medium transition-colors ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
+export function Button({
+  children,
+  variant = "primary",
+  size = "md",
+  tone = "light",
+  className = "",
+  ...props
+}: ButtonProps) {
+  const classes = `inline-flex items-center justify-center gap-2 rounded-full font-medium transition-colors duration-200 ${variantClasses[tone][variant]} ${sizeClasses[size]} ${className}`;
 
   if ("to" in props && props.to) {
     const { to, ...rest } = props;

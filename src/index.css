@@ -10,4 +10,8 @@
   body {
     @apply bg-paper text-ink antialiased;
   }
+
+  ::selection {
+    @apply bg-ink text-paper;
+  }
 }

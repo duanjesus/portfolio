@@ -1,16 +1,31 @@
+import { motion } from "framer-motion";
 import { Section } from "../components/layout/Section";
 import { ProjectCard } from "../components/ui/ProjectCard";
 import { projects } from "../data/projects";
+import type { Tone } from "../components/layout/Section";
 
 export function FeaturedProjects() {
   return (
-    <Section id="projects" className="border-t border-black/5">
-      <h2 className="text-sm font-semibold uppercase tracking-widest text-ink/40">Featured Projects</h2>
-      <div className="mt-12 flex flex-col gap-24 md:mt-16 md:gap-32">
-        {projects.map((project, index) => (
-          <ProjectCard key={project.slug} project={project} reversed={index % 2 === 1} />
-        ))}
-      </div>
-    </Section>
+    <>
+      {projects.map((project, index) => {
+        const tone: Tone = index % 2 === 0 ? "dark" : "light";
+        return (
+          <Section key={project.slug} id={index === 0 ? "projects" : undefined} tone={tone}>
+            {index === 0 && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+                className="mb-16 text-center text-sm font-semibold uppercase tracking-widest text-white/40"
+              >
+                Featured Projects
+              </motion.p>
+            )}
+            <ProjectCard project={project} tone={tone} />
+          </Section>
+        );
+      })}
+    </>
   );
 }

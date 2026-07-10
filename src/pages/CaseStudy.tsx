@@ -4,6 +4,7 @@ import { ArrowLeft, Github } from "lucide-react";
 import { Section } from "../components/layout/Section";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
+import { BrowserFrame } from "../components/ui/BrowserFrame";
 import { getProjectBySlug } from "../data/projects";
 
 const fadeUp = {
@@ -23,31 +24,36 @@ export function CaseStudy() {
 
   return (
     <article>
-      <Section className="pt-28 md:pt-36" narrow>
-        <Button to="/#projects" variant="ghost" size="sm" className="!px-0">
+      <Section tone="dark" className="pt-32 pb-20 md:pt-40">
+        <Button to="/#projects" variant="ghost" size="sm" tone="dark" className="!px-0">
           <ArrowLeft size={16} />
           Back to projects
         </Button>
-        <div className="mt-8 text-4xl">{project.emoji}</div>
-        <h1 className="mt-4 text-4xl font-semibold tracking-tight text-ink md:text-5xl">{project.name}</h1>
-        <p className="mt-4 text-xl text-ink/60">{project.tagline}</p>
-        <div className="mt-8">
-          <Button href={project.githubUrl} variant="secondary" size="sm">
-            <Github size={16} />
-            View on GitHub
-          </Button>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="mx-auto mt-10 max-w-2xl text-center"
+        >
+          <div className="text-4xl">{project.emoji}</div>
+          <h1 className="mt-4 text-5xl font-semibold tracking-tight text-white md:text-6xl">{project.name}</h1>
+          <p className="mt-4 text-xl text-white/60">{project.tagline}</p>
+          <div className="mt-8">
+            <Button href={project.githubUrl} variant="secondary" size="sm" tone="dark">
+              <Github size={16} />
+              View on GitHub
+            </Button>
+          </div>
+        </motion.div>
+
+        {project.screenshots.length > 0 && (
+          <div className="mx-auto mt-16 max-w-4xl">
+            <BrowserFrame src={project.screenshots[0].src} alt={project.screenshots[0].alt} />
+          </div>
+        )}
       </Section>
 
-      {project.screenshots.length > 0 && (
-        <Section className="pt-0" narrow>
-          <div className="overflow-hidden rounded-xl border border-ink/10 shadow-sm">
-            <img src={project.screenshots[0].src} alt={project.screenshots[0].alt} className="w-full" />
-          </div>
-        </Section>
-      )}
-
-      <Section className="border-t border-black/5" narrow>
+      <Section tone="light" narrow>
         <motion.div {...fadeUp}>
           <h2 className="text-sm font-semibold uppercase tracking-widest text-ink/40">Problem</h2>
           <p className="mt-4 text-lg leading-relaxed text-ink/80">{caseStudy.problem}</p>
@@ -62,11 +68,9 @@ export function CaseStudy() {
           <h2 className="text-sm font-semibold uppercase tracking-widest text-ink/40">Architecture</h2>
           <p className="mt-4 text-lg leading-relaxed text-ink/80">{caseStudy.architecture}</p>
           {project.screenshots.length > 1 && (
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <div className="mt-8 grid gap-6 sm:grid-cols-2">
               {project.screenshots.slice(1).map((shot) => (
-                <div key={shot.src} className="overflow-hidden rounded-xl border border-ink/10">
-                  <img src={shot.src} alt={shot.alt} loading="lazy" className="w-full" />
-                </div>
+                <BrowserFrame key={shot.src} src={shot.src} alt={shot.alt} />
               ))}
             </div>
           )}

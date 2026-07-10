@@ -6,20 +6,27 @@ export default {
     extend: {
       fontFamily: {
         sans: [
-          "Inter",
           "-apple-system",
           "BlinkMacSystemFont",
+          "SF Pro Display",
+          "SF Pro Text",
+          "Inter",
           "Segoe UI",
           "sans-serif",
         ],
       },
       colors: {
         ink: "#0A0A0A",
-        paper: "#FAFAFA",
-        accent: "#2563EB",
+        paper: "#FFFFFF",
+        void: "#000000",
+        mist: "#86868B",
+        accent: "#0071E3",
       },
       maxWidth: {
         content: "72rem",
+      },
+      letterSpacing: {
+        tightest: "-0.04em",
       },
     },
   },

@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import { Section } from "../components/layout/Section";
 import { useGithubStats } from "../hooks/useGithubStats";
 
@@ -5,31 +6,45 @@ export function GithubActivity() {
   const { stats, status, username } = useGithubStats();
 
   return (
-    <Section className="border-t border-black/5">
-      <h2 className="text-sm font-semibold uppercase tracking-widest text-ink/40">GitHub Activity</h2>
+    <Section tone="dark">
+      <motion.p
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="text-center text-sm font-semibold uppercase tracking-widest text-white/40"
+      >
+        GitHub Activity
+      </motion.p>
 
-      <div className="mt-8 overflow-hidden rounded-xl border border-ink/10">
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.98 }}
+        whileInView={{ opacity: 1, y: 0, scale: 1 }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="mx-auto mt-10 max-w-3xl overflow-hidden rounded-2xl bg-white p-6 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)] md:p-8"
+      >
         <img
-          src={`https://ghchart.rshah.org/2563EB/${username}`}
+          src={`https://ghchart.rshah.org/0071E3/${username}`}
           alt={`${username}'s GitHub contribution graph`}
           loading="lazy"
           className="w-full"
         />
-      </div>
+      </motion.div>
 
       {status === "ready" && stats && (
-        <div className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-3">
+        <div className="mx-auto mt-12 grid max-w-3xl grid-cols-2 gap-6 text-center sm:grid-cols-3">
           <div>
-            <p className="text-3xl font-semibold tracking-tight text-ink">{stats.publicRepoCount}</p>
-            <p className="mt-1 text-sm text-ink/50">Public repos</p>
+            <p className="text-4xl font-semibold tracking-tight text-white">{stats.publicRepoCount}</p>
+            <p className="mt-1 text-sm text-white/40">Public repos</p>
           </div>
           <div>
-            <p className="text-3xl font-semibold tracking-tight text-ink">{stats.totalStars}</p>
-            <p className="mt-1 text-sm text-ink/50">Stars</p>
+            <p className="text-4xl font-semibold tracking-tight text-white">{stats.totalStars}</p>
+            <p className="mt-1 text-sm text-white/40">Stars</p>
           </div>
           <div className="col-span-2 sm:col-span-1">
-            <p className="text-sm text-ink/50">Top languages</p>
-            <p className="mt-2 text-sm font-medium text-ink/80">
+            <p className="text-sm text-white/40">Top languages</p>
+            <p className="mt-2 text-sm font-medium text-white/80">
               {stats.topLanguages.map((entry) => entry.language).join(" · ") || "—"}
             </p>
           </div>
@@ -37,7 +52,7 @@ export function GithubActivity() {
       )}
 
       {status === "error" && (
-        <p className="mt-8 text-sm text-ink/40">
+        <p className="mt-10 text-center text-sm text-white/40">
           Live stats are temporarily unavailable — check{" "}
           <a href={`https://github.com/${username}`} className="underline" target="_blank" rel="noreferrer">
             github.com/{username}
