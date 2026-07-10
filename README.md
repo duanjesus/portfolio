@@ -15,7 +15,7 @@ npm run dev
 
 ## Before deploying
 
-Drop a real résumé at `public/resume.pdf` — the "Download Resume" buttons already link to it. Update the LinkedIn and WhatsApp links in `src/sections/Contact.tsx` (marked with `TODO`).
+Update the WhatsApp link in `src/sections/Contact.tsx` (marked with `TODO`) — everything else (résumé, LinkedIn, GitHub, email) is already wired up.
 
 ## Build
 
