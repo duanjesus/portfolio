@@ -11,6 +11,7 @@ export function Header() {
   const hashHref = (id: string) => (locale === "en" ? `/#${id}` : `/pt#${id}`);
   const switchTo = locale === "en" ? "pt" : "en";
   const switchHref = otherLocalePath(pathname, hash, locale);
+  const switchFlag = switchTo === "pt" ? "🇧🇷" : "🇺🇸";
 
   const navItems = [
     { label: t.nav.projects, href: hashHref("projects") },
@@ -34,9 +35,10 @@ export function Header() {
         <div className="flex items-center gap-4">
           <Link
             to={switchHref}
-            className="text-sm font-medium text-white/50 transition-colors hover:text-white"
+            className="flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1.5 text-sm font-medium text-white/70 transition-colors hover:border-white/30 hover:text-white"
             aria-label={switchTo === "pt" ? "Ver em português" : "View in English"}
           >
+            <span className="text-base leading-none">{switchFlag}</span>
             {switchTo.toUpperCase()}
           </Link>
           <Button href="/resume.pdf" variant="secondary" size="sm" tone="dark">
