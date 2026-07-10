@@ -16,8 +16,7 @@ const links = [
     icon: Github,
   },
   { label: "LinkedIn", value: "/in/duan-jesus", href: "https://www.linkedin.com/in/duan-jesus/", icon: Linkedin },
-  // TODO: replace with real WhatsApp link (e.g. https://wa.me/55...)
-  { label: "WhatsApp", value: "Add your WhatsApp link", href: "#", icon: MessageCircle },
+  { label: "WhatsApp", value: "(21) 96405-6742", href: "https://wa.me/5521964056742", icon: MessageCircle },
   { label: "Resume", value: "Download PDF", href: "/resume.pdf", icon: FileDown },
 ];
 
