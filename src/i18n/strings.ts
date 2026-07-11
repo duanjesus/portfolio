@@ -93,19 +93,19 @@ export const strings: Record<Locale, UiStrings> = {
     meta: {
       title: "Duan Jesus — Desenvolvedor Backend Java",
       description:
-        "Desenvolvedor backend Java construindo aplicações modernas com Spring Boot, React e PostgreSQL. Ex-Head de Abastecimento Social na CEASA-RJ, hoje em transição para Engenharia de Software.",
+        "Desenvolvedor backend Java construindo aplicações modernas com Spring Boot, React e PostgreSQL. Ex-Chefe de Abastecimento Social na CEASA-RJ, hoje em transição para Engenharia de Software.",
     },
     nav: { projects: "Projetos", about: "Sobre", contact: "Contato", resume: "Currículo" },
     hero: {
       role: "Desenvolvedor Backend Java",
       tagline:
-        "Construindo aplicações backend modernas com Java, Spring Boot, React e PostgreSQL. Ex-Head de Abastecimento Social na CEASA-RJ, hoje em transição para Engenharia de Software.",
+        "Construindo aplicações backend modernas com Java, Spring Boot, React e PostgreSQL. Ex-Chefe de Abastecimento Social na CEASA-RJ, hoje em transição para Engenharia de Software.",
       highlight: "De gerenciar operações de abastecimento social a construir soluções de software modernas.",
       viewProjects: "Ver Projetos",
       downloadResume: "Baixar Currículo",
     },
     techStack: { eyebrow: "Tecnologias" },
-    featuredProjects: { eyebrow: "Projetos em Destaque", github: "GitHub", readCaseStudy: "Ver Case Study" },
+    featuredProjects: { eyebrow: "Projetos em Destaque", github: "GitHub", readCaseStudy: "Ver Estudo de Caso" },
     about: {
       eyebrow: "Sobre",
       paragraph:
