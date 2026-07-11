@@ -49,7 +49,7 @@ export function GithubActivity() {
           <div className="col-span-2 sm:col-span-1">
             <p className="text-sm text-white/40">{t.topLanguages}</p>
             <p className="mt-2 text-sm font-medium text-white/80">
-              {stats.topLanguages.map((entry) => entry.language).join(" · ") || "—"}
+              {stats.topLanguages.map((entry) => entry.language).join(" · ") || "N/A"}
             </p>
           </div>
         </div>

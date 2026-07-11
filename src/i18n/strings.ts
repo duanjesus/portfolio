@@ -43,7 +43,7 @@ export interface UiStrings {
 export const strings: Record<Locale, UiStrings> = {
   en: {
     meta: {
-      title: "Duan Jesus — Java Backend Developer",
+      title: "Duan Jesus | Java Backend Developer",
       description:
         "Java backend developer building modern applications with Spring Boot, React and PostgreSQL. Former Head of Social Supply at CEASA-RJ, now transitioning into software engineering.",
     },
@@ -68,7 +68,7 @@ export const strings: Record<Locale, UiStrings> = {
       publicRepos: "Public repos",
       stars: "Stars",
       topLanguages: "Top languages",
-      errorPrefix: "Live stats are temporarily unavailable — check",
+      errorPrefix: "Live stats are temporarily unavailable right now. Check",
       errorSuffix: "directly.",
     },
     contact: {
@@ -91,7 +91,7 @@ export const strings: Record<Locale, UiStrings> = {
   },
   pt: {
     meta: {
-      title: "Duan Jesus — Desenvolvedor Backend Java",
+      title: "Duan Jesus | Desenvolvedor Backend Java",
       description:
         "Desenvolvedor backend Java construindo aplicações modernas com Spring Boot, React e PostgreSQL. Ex-Chefe de Abastecimento Social na CEASA-RJ, hoje em transição para Engenharia de Software.",
     },
@@ -116,7 +116,7 @@ export const strings: Record<Locale, UiStrings> = {
       publicRepos: "Repositórios públicos",
       stars: "Estrelas",
       topLanguages: "Principais linguagens",
-      errorPrefix: "As estatísticas ao vivo estão indisponíveis no momento — acesse",
+      errorPrefix: "As estatísticas ao vivo estão indisponíveis no momento. Acesse",
       errorSuffix: "diretamente.",
     },
     contact: {

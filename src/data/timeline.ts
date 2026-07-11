@@ -11,7 +11,7 @@ export const timeline: Record<Locale, TimelineItem[]> = {
     {
       year: "2024",
       title: "CEASA-RJ",
-      description: "Led the Social Supply (Abastecimento Social) sector — process, people, and operations management.",
+      description: "Led the Social Supply (Abastecimento Social) sector: process, people, and operations management.",
     },
     {
       year: "2025",
@@ -21,7 +21,7 @@ export const timeline: Record<Locale, TimelineItem[]> = {
     {
       year: "2026",
       title: "Open Source Projects",
-      description: "Shipped three full-stack portfolio projects — Social Supply, CashPilot, and PulseHub.",
+      description: "Shipped three full-stack portfolio projects: Social Supply, CashPilot, and PulseHub.",
     },
     {
       year: "Now",
@@ -33,7 +33,7 @@ export const timeline: Record<Locale, TimelineItem[]> = {
     {
       year: "2024",
       title: "CEASA-RJ",
-      description: "Liderei o setor de Abastecimento Social — gestão de processos, pessoas e operações.",
+      description: "Liderei o setor de Abastecimento Social: gestão de processos, pessoas e operações.",
     },
     {
       year: "2025",
@@ -43,7 +43,7 @@ export const timeline: Record<Locale, TimelineItem[]> = {
     {
       year: "2026",
       title: "Projetos Open Source",
-      description: "Lancei três projetos completos de portfólio — Social Supply, CashPilot e PulseHub.",
+      description: "Lancei três projetos completos de portfólio: Social Supply, CashPilot e PulseHub.",
     },
     {
       year: "Hoje",

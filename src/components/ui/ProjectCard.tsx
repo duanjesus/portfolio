@@ -29,9 +29,8 @@ export function ProjectCard({ project, tone }: ProjectCardProps) {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="mx-auto max-w-2xl text-center"
       >
-        <div className="text-4xl">{project.emoji}</div>
         <h3
-          className={`mt-4 text-4xl font-semibold tracking-tight md:text-5xl ${
+          className={`text-4xl font-semibold tracking-tight md:text-5xl ${
             isDark ? "text-shadow-dark text-white" : "text-shadow-light text-ink"
           }`}
         >
