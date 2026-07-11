@@ -31,10 +31,8 @@ export function Hero() {
         className="mx-auto max-w-4xl text-center"
       >
         <motion.h1
-          initial={{ opacity: 0, y: 24, filter: "blur(10px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 1, ease: "easeOut" }}
-          className="text-shimmer text-shadow-dark text-6xl font-semibold tracking-tightest md:text-8xl"
+          variants={item}
+          className="text-shadow-dark text-6xl font-semibold tracking-tightest text-white md:text-8xl"
         >
           Duan Jesus
         </motion.h1>

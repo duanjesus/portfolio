@@ -37,8 +37,11 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-black backdrop-blur-xl">
       <div className="mx-auto grid max-w-content grid-cols-[1fr_auto_1fr] items-center gap-4 px-6 py-4">
-        <Link to={homeHref} className="justify-self-start text-sm font-semibold tracking-tight text-white">
-          Duan Jesus
+        <Link to={homeHref} className="group flex items-center gap-2.5 justify-self-start">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-white to-white/70 text-[11px] font-bold tracking-tight text-black transition-transform duration-200 group-hover:scale-105">
+            DJ
+          </span>
+          <span className="text-sm font-semibold tracking-tight text-white">Duan Jesus</span>
         </Link>
 
         <nav className="hidden items-center gap-8 text-sm text-white/60 md:flex">
