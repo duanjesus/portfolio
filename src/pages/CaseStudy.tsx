@@ -26,7 +26,7 @@ export function CaseStudy() {
 
   const content = project.content[locale];
   const { caseStudy } = content;
-  const projectsHref = locale === "en" ? "/#projects" : "/pt#projects";
+  const projectsHref = locale === "en" ? `/#${project.slug}` : `/pt#${project.slug}`;
 
   return (
     <article>

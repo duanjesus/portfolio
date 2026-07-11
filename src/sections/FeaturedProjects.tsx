@@ -15,7 +15,7 @@ export function FeaturedProjects() {
       {projects.map((project, index) => {
         const tone: Tone = index % 2 === 0 ? "dark" : "light";
         return (
-          <Section key={project.slug} id={index === 0 ? "projects" : undefined} tone={tone}>
+          <Section key={project.slug} id={project.slug} tone={tone}>
             {index === 0 && (
               <motion.p
                 initial={{ opacity: 0 }}

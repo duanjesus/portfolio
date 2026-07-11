@@ -17,7 +17,7 @@ const toneClasses: Record<Tone, string> = {
 
 export function Section({ id, children, className = "", narrow = false, tone = "light" }: SectionProps) {
   return (
-    <section id={id} className={`relative overflow-hidden ${toneClasses[tone]} py-24 md:py-36 ${className}`}>
+    <section id={id} className={`relative scroll-mt-20 overflow-hidden ${toneClasses[tone]} py-24 md:py-36 ${className}`}>
       {tone === "light" ? (
         <>
           <div

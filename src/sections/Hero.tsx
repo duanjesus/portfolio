@@ -3,6 +3,7 @@ import { Section } from "../components/layout/Section";
 import { Button } from "../components/ui/Button";
 import { useLocale } from "../i18n/locale";
 import { strings } from "../i18n/strings";
+import { projects } from "../data/projects";
 
 const container = {
   hidden: {},
@@ -19,7 +20,7 @@ const item = {
 export function Hero() {
   const locale = useLocale();
   const t = strings[locale].hero;
-  const projectsHref = locale === "en" ? "/#projects" : "/pt#projects";
+  const projectsHref = locale === "en" ? `/#${projects[0].slug}` : `/pt#${projects[0].slug}`;
 
   return (
     <Section tone="dark" className="pt-40 pb-28 md:pt-52 md:pb-40">

@@ -1,8 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "../ui/Button";
 import { FlagBR, FlagUS } from "../ui/Flag";
+import { NavDropdown } from "../ui/NavDropdown";
 import { useLocale, otherLocalePath } from "../../i18n/locale";
 import { strings } from "../../i18n/strings";
+import { projects } from "../../data/projects";
+import { contactLinks } from "../../data/contactLinks";
 
 export function Header() {
   const locale = useLocale();
@@ -14,11 +17,22 @@ export function Header() {
   const switchHref = otherLocalePath(pathname, hash, locale);
   const SwitchFlag = switchTo === "pt" ? FlagBR : FlagUS;
 
-  const navItems = [
-    { label: t.nav.projects, href: hashHref("projects") },
-    { label: t.nav.about, href: hashHref("about") },
-    { label: t.nav.contact, href: hashHref("contact") },
-  ];
+  const projectItems = projects.map((project) => ({
+    key: project.slug,
+    label: project.name,
+    sublabel: project.content[locale].tagline,
+    href: hashHref(project.slug),
+    icon: <span className="text-base leading-none">{project.emoji}</span>,
+  }));
+
+  const contactItems = contactLinks.map((link) => ({
+    key: link.label,
+    label: link.label,
+    sublabel: link.value,
+    href: link.href,
+    external: true,
+    icon: <link.icon size={16} />,
+  }));
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-black backdrop-blur-xl">
@@ -28,11 +42,11 @@ export function Header() {
         </Link>
 
         <nav className="hidden items-center gap-8 text-sm text-white/60 md:flex">
-          {navItems.map((item) => (
-            <a key={item.href} href={item.href} className="transition-colors hover:text-white">
-              {item.label}
-            </a>
-          ))}
+          <NavDropdown label={t.nav.projects} triggerHref={hashHref(projects[0].slug)} items={projectItems} />
+          <a href={hashHref("about")} className="transition-colors hover:text-white">
+            {t.nav.about}
+          </a>
+          <NavDropdown label={t.nav.contact} triggerHref={hashHref("contact")} items={contactItems} />
         </nav>
 
         <div className="flex items-center justify-self-end gap-3">

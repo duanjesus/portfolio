@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
-import { Github, Linkedin, Mail, MessageCircle, FileDown } from "lucide-react";
+import { FileDown } from "lucide-react";
 import { Section } from "../components/layout/Section";
+import { contactLinks } from "../data/contactLinks";
 import { useLocale } from "../i18n/locale";
 import { strings } from "../i18n/strings";
 
@@ -8,23 +9,7 @@ export function Contact() {
   const locale = useLocale();
   const t = strings[locale].contact;
 
-  const links = [
-    {
-      label: "Email",
-      value: "duanjesus30@gmail.com",
-      href: "mailto:duanjesus30@gmail.com",
-      icon: Mail,
-    },
-    {
-      label: "GitHub",
-      value: "@duanjesus",
-      href: "https://github.com/duanjesus",
-      icon: Github,
-    },
-    { label: "LinkedIn", value: "/in/duan-jesus", href: "https://www.linkedin.com/in/duan-jesus/", icon: Linkedin },
-    { label: "WhatsApp", value: "(21) 96405-6742", href: "https://wa.me/5521964056742", icon: MessageCircle },
-    { label: t.resumeLabel, value: t.resumeValue, href: "/resume.pdf", icon: FileDown },
-  ];
+  const links = [...contactLinks, { label: t.resumeLabel, value: t.resumeValue, href: "/resume.pdf", icon: FileDown }];
 
   return (
     <Section id="contact" tone="light">
