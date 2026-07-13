@@ -10,8 +10,8 @@ export interface ContactLink {
 export const contactLinks: ContactLink[] = [
   {
     label: "Email",
-    value: "duanjesus30@gmail.com",
-    href: "mailto:duanjesus30@gmail.com",
+    value: "duanjesus@hotmail.com",
+    href: "mailto:duanjesus@hotmail.com",
     icon: Mail,
   },
   {
