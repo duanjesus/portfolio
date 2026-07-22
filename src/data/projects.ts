@@ -53,6 +53,74 @@ import phProfile from "../assets/screenshots/pulsehub/profile.png";
 
 export const projects: Project[] = [
   {
+    slug: "java-patterns-lab",
+    name: "Java Patterns Lab",
+    techStack: ["Java 21", "Maven", "JUnit 5"],
+    caseStudyTechStack: ["Java 21", "Maven", "JUnit 5", "Mermaid UML"],
+    githubUrl: "https://github.com/duanjesus/java-patterns-lab",
+    screenshots: [],
+    content: {
+      en: {
+        tagline: "A worked catalog of classic Gang-of-Four design patterns.",
+        description:
+          "Sixteen GoF design patterns implemented against one shared e-commerce checkout domain, each with a problem/solution writeup, a UML diagram, runnable code, and a test proving the pattern's actual behavior.",
+        caseStudy: {
+          problem:
+            "Most design-pattern tutorials show a pattern in isolation with a toy example unrelated to the last one, so nothing builds toward a coherent mental model of when to actually reach for each one.",
+          solution:
+            "All 16 patterns (Strategy, Factory Method, Observer, Builder, Adapter, Decorator, Chain of Responsibility, Template Method, Command, Singleton, Abstract Factory, Facade, Proxy, Composite, State, Iterator) are implemented against the same e-commerce checkout domain (orders, payments, invoices, support tickets, reports, shipping, catalog), so the catalog reads as one coherent story. Every pattern ships with a problem/solution writeup and a Mermaid UML diagram that renders directly on GitHub, a runnable Demo class with a narrated main(), and a JUnit 5 test that asserts an actual behavioral difference, not just that the object compiles.",
+          architecture:
+            "Plain Java 21, Maven, no framework, no dependencies beyond JUnit 5, deliberately kept dependency-light so every example runs with nothing beyond mvn test. One self-contained package per pattern, mirrored by one test package; patterns don't import each other's classes even where the concept overlaps.",
+          challenges: [
+            {
+              title: "One coherent domain instead of sixteen toy examples",
+              description:
+                "Keeping every pattern's example genuinely tied to the same checkout domain, rather than falling back to unrelated animal or shape examples the moment a pattern didn't obviously fit, took deliberate design work per pattern, like modeling a shipping label and customs form pairing as Abstract Factory, or nested cart bundles as Composite.",
+            },
+            {
+              title: "Tests that prove behavior, not just compilation",
+              description:
+                "Each JUnit 5 test asserts an actual behavioral difference the pattern produces, such as swapping a Strategy changing the computed total, or an invalid State transition being rejected, rather than simply instantiating the object, which is the more common shortcut in pattern demo repos.",
+            },
+          ],
+          lessonsLearned: [
+            "A shared domain across every example turns a reference catalog into something that reads start to finish, and makes it obvious which real-world problem each pattern actually solves.",
+            "Chosen as the first of the portfolio's five backend-focused projects, deliberately scoped to demonstrate object-oriented design fundamentals before moving on to CRUD architecture, business rules, real-time communication, and infrastructure.",
+          ],
+        },
+      },
+      pt: {
+        tagline: "Um catálogo comentado dos padrões clássicos de design GoF.",
+        description:
+          "Dezesseis padrões de design GoF implementados sobre um único domínio de checkout de e-commerce compartilhado, cada um com problema/solução, diagrama UML, código executável e um teste que comprova o comportamento real do padrão.",
+        caseStudy: {
+          problem:
+            "A maioria dos tutoriais de padrões de design mostra cada padrão isolado, com um exemplo de brinquedo sem relação com o anterior, então nada constrói um modelo mental coerente de quando realmente usar cada um.",
+          solution:
+            "Os 16 padrões (Strategy, Factory Method, Observer, Builder, Adapter, Decorator, Chain of Responsibility, Template Method, Command, Singleton, Abstract Factory, Facade, Proxy, Composite, State, Iterator) são implementados sobre o mesmo domínio de checkout de e-commerce (pedidos, pagamentos, faturas, chamados de suporte, relatórios, envio, catálogo), então o catálogo lê como uma história coerente. Cada padrão vem com um texto de problema/solução e um diagrama UML em Mermaid que renderiza direto no GitHub, uma classe Demo executável com um main() narrado, e um teste JUnit 5 que verifica uma diferença de comportamento real, não só que o objeto compila.",
+          architecture:
+            "Java 21 puro, Maven, sem framework, sem dependências além do JUnit 5, propositalmente leve em dependências para que todo exemplo rode só com mvn test. Um pacote independente por padrão, espelhado por um pacote de teste; os padrões não importam classes uns dos outros mesmo quando o conceito se sobrepõe.",
+          challenges: [
+            {
+              title: "Um domínio coerente em vez de dezesseis exemplos soltos",
+              description:
+                "Manter o exemplo de cada padrão genuinamente ligado ao mesmo domínio de checkout, em vez de recorrer a exemplos de animais ou formas geométricas assim que um padrão não se encaixava obviamente, exigiu trabalho de design deliberado por padrão, como modelar o par etiqueta de envio e formulário aduaneiro como Abstract Factory, ou pacotes de carrinho aninhados como Composite.",
+            },
+            {
+              title: "Testes que provam comportamento, não só compilação",
+              description:
+                "Cada teste JUnit 5 verifica uma diferença de comportamento real que o padrão produz, como trocar uma Strategy mudando o total calculado, ou uma transição de State inválida sendo rejeitada, em vez de só instanciar o objeto, que é o atalho mais comum em repositórios de demonstração de padrões.",
+            },
+          ],
+          lessonsLearned: [
+            "Um domínio compartilhado em todos os exemplos transforma um catálogo de referência em algo que se lê do início ao fim, e deixa claro qual problema do mundo real cada padrão realmente resolve.",
+            "Escolhido como o primeiro dos cinco projetos de backend do portfólio, propositalmente dimensionado para demonstrar fundamentos de design orientado a objetos antes de avançar para arquitetura CRUD, regras de negócio, comunicação em tempo real e infraestrutura.",
+          ],
+        },
+      },
+    },
+  },
+  {
     slug: "social-supply",
     name: "Social Supply Management",
     techStack: ["Java 21", "Spring Boot 3", "PostgreSQL", "JWT", "React", "TypeScript", "Docker"],
@@ -289,6 +357,161 @@ export const projects: Project[] = [
           lessonsLearned: [
             "Sistemas em tempo real falham de formas que APIs REST não falham. Um bug de ordem de inicialização de provedor de segurança só apareceu ao subir a aplicação completa no Docker, não em testes unitários isolados. Testes verdes sozinhos não provam que uma stack em tempo real realmente sobe corretamente.",
             "Escolhido como o terceiro projeto do portfólio para completar o conjunto: arquitetura e CRUD (Social Supply), regras de negócio (CashPilot), comunicação em tempo real (PulseHub). Três competências diferentes, três respostas concretas para três perguntas diferentes de entrevista.",
+          ],
+        },
+      },
+    },
+  },
+  {
+    slug: "pulsequeue",
+    name: "PulseQueue",
+    techStack: ["Java 21", "Spring Boot 3", "RabbitMQ", "Redis", "React"],
+    caseStudyTechStack: [
+      "Java 21",
+      "Spring Boot 3",
+      "RabbitMQ",
+      "Redis",
+      "PostgreSQL",
+      "Flyway",
+      "React",
+      "TypeScript",
+      "Prometheus",
+      "Grafana",
+    ],
+    githubUrl: "https://github.com/duanjesus/pulsequeue",
+    screenshots: [],
+    content: {
+      en: {
+        tagline: "Notification infrastructure other services publish to, not a notification CRUD app.",
+        description:
+          "A RabbitMQ-backed event pipeline with retry and dead-lettering, Redis dedup and rate-limiting, an API-key-guarded ingress, and full observability with Prometheus and Grafana, fanning events out to Email, Push, and real WebSocket delivery.",
+        caseStudy: {
+          problem:
+            "Most notification features are built as a CRUD table bolted onto whichever service happens to need alerts first, which means every new service that wants to notify a user reinvents retry logic, dedup, and delivery channels from scratch.",
+          solution:
+            "PulseQueue is the infrastructure layer other services publish to: any producer that can reach RabbitMQ with a valid API key hands off a domain event, such as expense.created or donation.created, or any future type, and walks away. PulseQueue owns everything from that point on: queueing, retrying with exponential backoff, dead-lettering what can't be delivered, deduplicating redeliveries, rate-limiting noisy producers, and fanning the event out to Email, Push, and a real WebSocket channel, all visible on a live Kibana-style ops dashboard. It ships standalone with its own event-simulation endpoint, but a real bridge already calls back into PulseHub to deliver actual chat messages.",
+          architecture:
+            "Spring Boot 3 + Java 21 backend: a topic exchange feeds a single queue, a stateless retry interceptor handles exponential backoff, and RabbitMQ's own dead-letter-exchange wiring takes over once retries are exhausted, no custom retry-tracking table needed. Redis backs both deduplication (check-before, mark-after-success, not claim-then-process) and per-source rate limiting. Every outcome persists to PostgreSQL via Flyway-managed migrations. The React + TypeScript dashboard polls REST stats via TanStack Query and subscribes to a STOMP topic for the live event feed, styled deliberately as a dark ops tool, not an admin CRUD panel. Prometheus scrapes custom Micrometer counters and a provisioned Grafana dashboard visualizes them.",
+          challenges: [
+            {
+              title: "Deduplication that doesn't cannibalize its own retries",
+              description:
+                "Marking an event as processed before dispatch would make every in-process retry of a currently-failing delivery look like a duplicate of itself and get silently skipped instead of actually retrying. Fixed by only writing the Redis dedup key after the dispatch service actually succeeds.",
+            },
+            {
+              title: "A transaction boundary that was erasing its own failure records",
+              description:
+                "Wrapping the whole processing method in one transactional call meant that rethrowing the triggering exception, needed for the retry interceptor to see the failure, rolled back the very 'this attempt failed' row meant to survive it. Fixed by recording outcomes through a separate bean where each write commits independently.",
+            },
+          ],
+          lessonsLearned: [
+            "Positioning this as infrastructure other services call, not a feature any one service owns, forced real interface discipline: one event contract, one publish path, and every consumer-side concern (retry, dedup, rate limit, fan-out) living entirely on this side of that boundary.",
+            "Chosen as the fifth portfolio project specifically to demonstrate message-queue and observability competency (RabbitMQ, Redis, Prometheus, Grafana) that none of the other four cover.",
+          ],
+        },
+      },
+      pt: {
+        tagline: "Infraestrutura de notificação para outros serviços publicarem, não um CRUD de notificações.",
+        description:
+          "Um pipeline de eventos com RabbitMQ, retry e dead-lettering, deduplicação e rate-limiting via Redis, uma entrada protegida por API key e observabilidade completa com Prometheus e Grafana, distribuindo eventos por Email, Push e entrega real via WebSocket.",
+        caseStudy: {
+          problem:
+            "A maioria das funcionalidades de notificação é construída como uma tabela CRUD grudada no primeiro serviço que precisou de alertas, o que significa que cada novo serviço que quer notificar um usuário reinventa a lógica de retry, deduplicação e canais de entrega do zero.",
+          solution:
+            "O PulseQueue é a camada de infraestrutura que outros serviços usam: qualquer produtor que alcance o RabbitMQ com uma API key válida entrega um evento de domínio, como expense.created ou donation.created, ou qualquer tipo futuro, e segue em frente. A partir daí, o PulseQueue cuida de tudo: enfileiramento, retry com backoff exponencial, dead-lettering do que não pode ser entregue, deduplicação de reentregas, rate-limiting de produtores barulhentos, e distribuição do evento por Email, Push e um canal WebSocket real, tudo visível em um painel operacional ao vivo estilo Kibana. Funciona de forma standalone com seu próprio endpoint de simulação de eventos, mas já existe uma ponte real que chama o PulseHub de volta para entregar mensagens de chat de verdade.",
+          architecture:
+            "Backend em Spring Boot 3 + Java 21: uma topic exchange alimenta uma única fila, um interceptor de retry sem estado cuida do backoff exponencial, e o próprio mecanismo de dead-letter-exchange do RabbitMQ assume quando as tentativas se esgotam, sem precisar de uma tabela customizada de rastreamento de retry. O Redis sustenta tanto a deduplicação (verificar antes, marcar depois do sucesso, não reservar e depois processar) quanto o rate-limiting por origem. Todo resultado é persistido no PostgreSQL via migrações gerenciadas pelo Flyway. O painel em React + TypeScript consulta estatísticas via REST com TanStack Query e assina um tópico STOMP para o feed de eventos ao vivo, estilizado deliberadamente como uma ferramenta operacional escura, não um painel CRUD administrativo. O Prometheus coleta contadores customizados via Micrometer e um dashboard Grafana provisionado os visualiza.",
+          challenges: [
+            {
+              title: "Deduplicação que não devora suas próprias tentativas de retry",
+              description:
+                "Marcar um evento como processado antes do envio faria com que cada nova tentativa de uma entrega que ainda está falhando parecesse uma duplicata de si mesma e fosse silenciosamente ignorada em vez de realmente tentada de novo. Corrigido escrevendo a chave de deduplicação no Redis só depois que o serviço de despacho realmente tem sucesso.",
+            },
+            {
+              title: "Um limite de transação que apagava seus próprios registros de falha",
+              description:
+                "Envolver todo o método de processamento em uma única transação fazia com que relançar a exceção que disparou a falha, necessário para o interceptor de retry enxergar o problema, desfizesse justamente a linha 'essa tentativa falhou' que deveria sobreviver a isso. Corrigido registrando os resultados através de um bean separado, onde cada escrita é confirmada independentemente.",
+            },
+          ],
+          lessonsLearned: [
+            "Posicionar isso como infraestrutura que outros serviços chamam, e não uma funcionalidade que um serviço qualquer possui, forçou disciplina real de interface: um único contrato de evento, um único caminho de publicação, e toda preocupação do lado consumidor (retry, dedup, rate limit, distribuição) vivendo inteiramente desse lado da fronteira.",
+            "Escolhido como o quinto projeto do portfólio especificamente para demonstrar competência em filas de mensagens e observabilidade (RabbitMQ, Redis, Prometheus, Grafana) que nenhum dos outros quatro cobre.",
+          ],
+        },
+      },
+    },
+  },
+  {
+    slug: "rotacusto",
+    name: "RotaCusto",
+    techStack: ["Java 21", "Spring Boot 3", "Flutter", "PostgreSQL", "OpenStreetMap"],
+    caseStudyTechStack: [
+      "Java 21",
+      "Spring Boot 3",
+      "Flutter",
+      "PostgreSQL",
+      "OpenRouteService",
+      "Overpass API",
+      "Nominatim",
+    ],
+    githubUrl: "https://github.com/duanjesus/rotacusto",
+    screenshots: [],
+    content: {
+      en: {
+        tagline: "Trip cost calculator with live turn-by-turn GPS navigation, running on OpenStreetMap.",
+        description:
+          "Calculates the full cost of a road trip (fuel/energy, tolls, vehicle wear, food stops) across cars, motorcycles, vans, trucks, and buses, including EVs and hybrids, then offers live voice-guided navigation once the trip is calculated. Windows desktop and Android from one Flutter codebase, no Google Maps billing.",
+        caseStudy: {
+          problem:
+            "Estimating what a road trip actually costs, not just distance, means combining vehicle-specific fuel or energy consumption, every toll along the route, wear, and food stops, and commercial map platforms that offer this kind of routing charge per request at a scale that doesn't work for a free personal tool.",
+          solution:
+            "RotaCusto's backend is the entire 'brain': it resolves addresses, computes routes and turn-by-turn instructions, detects tolls crossed along the way, and prices the whole trip for the selected vehicle, all on top of OpenStreetMap infrastructure (Nominatim geocoding, OpenRouteService routing, Overpass for tolls and fuel stations) instead of a billed Google Maps API. The Flutter client never calculates anything itself, only sends parameters and renders the response, across a shared Windows desktop and Android codebase. Once a trip is calculated, the app switches into live turn-by-turn navigation with voice guidance, automatic rerouting on deviation, and Android background operation that survives the screen turning off.",
+          architecture:
+            "Spring Boot 3 REST API (Java 21) with a self-starting embedded PostgreSQL, no Docker or separate service required, backed by a roughly 9,000-row vehicle catalog (cars, motorcycles, vans, trucks, buses, EVs, plug-in hybrids) and a 330-plaza national toll dataset, both mixing real government sources with clearly-documented estimates where no official data exists. The Flutter app keeps every navigation-relevant calculation, like route progress matching and deviation detection, as pure Dart with no Flutter or network imports, so it's unit-testable without a device.",
+          challenges: [
+            {
+              title: "A vehicle and toll dataset built from whatever data actually exists, not assumed to exist",
+              description:
+                "Real government fuel-consumption data only exists for cars; motorcycles, trucks, and buses needed a documented estimation methodology instead. Toll pricing similarly turned out not to be uniform per highway concession, the norm rather than the exception, so each concession's plazas were verified individually rather than applying one blanket price nationwide.",
+            },
+            {
+              title: "Reliable turn-by-turn navigation on a real moving device",
+              description:
+                "Voice guidance has to speak a step only when it changes, deviation detection needs multiple consecutive off-route GPS readings before rerouting to avoid false positives from GPS noise, and Android background operation needs a foreground service with its own Flutter binding, since the standard method-channel plugins throw if used from a bare background isolate.",
+            },
+          ],
+          lessonsLearned: [
+            "Being explicit about what's real government data versus a documented estimate, for both the vehicle catalog and the toll dataset, turned out to matter more for correctness than any single algorithm in the app. Most of the actual engineering effort went into sourcing and verifying data, not computing with it.",
+            "The most complex and recently-shipped project in the portfolio, chosen to show cross-platform mobile delivery (Flutter, Windows and Android from one codebase) and large-scale external-data integration on top of the backend and web competencies the other four projects already cover.",
+          ],
+        },
+      },
+      pt: {
+        tagline: "Calculadora de custo de viagem com navegação GPS turn-by-turn ao vivo, rodando sobre OpenStreetMap.",
+        description:
+          "Calcula o custo completo de uma viagem rodoviária (combustível/energia, pedágios, desgaste do veículo, paradas para alimentação) para carros, motos, vans, caminhões e ônibus, incluindo elétricos e híbridos, e depois oferece navegação guiada por voz ao vivo assim que a viagem é calculada. Windows desktop e Android a partir do mesmo código Flutter, sem cobrança do Google Maps.",
+        caseStudy: {
+          problem:
+            "Estimar quanto uma viagem rodoviária realmente custa, não só a distância, significa combinar consumo de combustível ou energia específico do veículo, cada pedágio no trajeto, desgaste e paradas para alimentação, e as plataformas de mapa comerciais que oferecem esse tipo de roteirização cobram por requisição numa escala que não funciona para uma ferramenta pessoal gratuita.",
+          solution:
+            "O backend do RotaCusto é o 'cérebro' inteiro: resolve endereços, calcula rotas e instruções de navegação passo a passo, detecta pedágios cruzados no caminho, e precifica a viagem inteira para o veículo selecionado, tudo sobre infraestrutura OpenStreetMap (geocodificação Nominatim, roteirização OpenRouteService, Overpass para pedágios e postos de combustível) em vez de uma API paga do Google Maps. O cliente Flutter nunca calcula nada sozinho, só envia parâmetros e renderiza a resposta, com um único código compartilhado entre Windows desktop e Android. Assim que uma viagem é calculada, o app entra em navegação turn-by-turn ao vivo com voz guiada, recálculo automático de rota em caso de desvio, e operação em segundo plano no Android que sobrevive à tela apagada.",
+          architecture:
+            "API REST em Spring Boot 3 (Java 21) com um PostgreSQL embarcado que sobe sozinho, sem precisar de Docker ou serviço separado, sustentado por um catálogo de cerca de 9 mil veículos (carros, motos, vans, caminhões, ônibus, elétricos, híbridos plug-in) e uma base nacional de 330 praças de pedágio, ambos combinando fontes governamentais reais com estimativas claramente documentadas onde não existe dado oficial. O app Flutter mantém todo cálculo relevante para navegação, como correspondência de progresso na rota e detecção de desvio, como Dart puro, sem imports de Flutter ou rede, então é testável sem precisar de um dispositivo.",
+          challenges: [
+            {
+              title: "Um catálogo de veículos e pedágios construído a partir do dado que realmente existe, não do que se assume existir",
+              description:
+                "Dado oficial de consumo de combustível do governo só existe para carros; motos, caminhões e ônibus precisaram de uma metodologia de estimativa documentada. O preço de pedágio, da mesma forma, não é uniforme por concessão rodoviária, isso é a regra, não a exceção, então cada praça de cada concessão foi verificada individualmente em vez de aplicar um preço genérico nacional.",
+            },
+            {
+              title: "Navegação turn-by-turn confiável em um dispositivo real em movimento",
+              description:
+                "A voz guiada só pode falar uma instrução quando ela muda, a detecção de desvio precisa de várias leituras de GPS consecutivas fora da rota antes de recalcular para evitar falsos positivos por ruído de GPS, e a operação em segundo plano no Android precisa de um serviço foreground com seu próprio binding do Flutter, já que os plugins padrão baseados em method channel lançam exceção se usados de um isolate em segundo plano puro.",
+            },
+          ],
+          lessonsLearned: [
+            "Ser explícito sobre o que é dado oficial do governo versus uma estimativa documentada, tanto no catálogo de veículos quanto na base de pedágios, importou mais para a correção do que qualquer algoritmo isolado do app. A maior parte do esforço de engenharia foi buscar e verificar dado, não calcular em cima dele.",
+            "O projeto mais complexo e mais recente do portfólio, escolhido para mostrar entrega mobile multiplataforma (Flutter, Windows e Android a partir de um único código) e integração de dados externos em larga escala, complementando as competências de backend e web que os outros quatro projetos já cobrem.",
           ],
         },
       },

@@ -39,9 +39,11 @@ export function ProjectCard({ project, tone }: ProjectCardProps) {
         <p className={`mt-4 text-lg md:text-xl ${isDark ? "text-white/60" : "text-ink/60"}`}>{content.tagline}</p>
       </motion.div>
 
-      <div className="mx-auto mt-14 max-w-4xl">
-        <BrowserFrame src={project.screenshots[0].src} alt={project.screenshots[0].alt} />
-      </div>
+      {project.screenshots.length > 0 && (
+        <div className="mx-auto mt-14 max-w-4xl">
+          <BrowserFrame src={project.screenshots[0].src} alt={project.screenshots[0].alt} />
+        </div>
+      )}
 
       <div className="mx-auto mt-14 max-w-2xl text-center">
         <p className={`text-lg leading-relaxed ${isDark ? "text-white/70" : "text-ink/70"}`}>
