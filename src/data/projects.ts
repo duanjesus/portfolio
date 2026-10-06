@@ -22,6 +22,8 @@ export interface ProjectContent {
 export interface Screenshot {
   src: string;
   alt: string;
+  /** The image already draws its own window chrome (terminal captures). */
+  bare?: boolean;
 }
 
 export interface Project {
@@ -51,7 +53,210 @@ import phChatDirect from "../assets/screenshots/pulsehub/chat-direct.png";
 import phChatGroup from "../assets/screenshots/pulsehub/chat-group.png";
 import phProfile from "../assets/screenshots/pulsehub/profile.png";
 
+import tzCompleted from "../assets/screenshots/tenaz/viewer-completed.png";
+import tzCancelled from "../assets/screenshots/tenaz/viewer-cancelled.png";
+
+import cdbRecovery from "../assets/screenshots/capivaradb/recovery.svg";
+import cdbIsolation from "../assets/screenshots/capivaradb/isolation.svg";
+import cdbCrashTests from "../assets/screenshots/capivaradb/crash-tests.svg";
+import cdbExplain from "../assets/screenshots/capivaradb/explain.svg";
+
+import almoxDashboard from "../assets/screenshots/classcont-almox/painel-dashboard.png";
+import almoxKardex from "../assets/screenshots/classcont-almox/kardex.png";
+import almoxMateriais from "../assets/screenshots/classcont-almox/materiais.png";
+import almoxConsumo from "../assets/screenshots/classcont-almox/consumo-setor.png";
+import almoxNova from "../assets/screenshots/classcont-almox/nova-requisicao.png";
+
+import rhEspelho from "../assets/screenshots/classcont-rhfolha/espelho.png";
+import rhInicio from "../assets/screenshots/classcont-rhfolha/inicio.png";
+import rhJustificativas from "../assets/screenshots/classcont-rhfolha/justificativas.png";
+import rhPainel from "../assets/screenshots/classcont-rhfolha/painel-dashboard.png";
+import rhFolhaAuxilio from "../assets/screenshots/classcont-rhfolha/folha-auxilio.png";
+
 export const projects: Project[] = [
+  {
+    slug: "tenaz",
+    name: "Tenaz",
+    techStack: ["Java 21", "Virtual Threads", "PostgreSQL", "Spring Boot 3", "Testcontainers"],
+    caseStudyTechStack: [
+      "Java 21",
+      "Virtual Threads",
+      "PostgreSQL",
+      "JDBC",
+      "Spring Boot 3.3",
+      "JUnit 5",
+      "Testcontainers",
+      "Maven",
+    ],
+    githubUrl: "https://github.com/duanjesus/tenaz",
+    screenshots: [
+      { src: tzCompleted, alt: "Tenaz history viewer showing a completed order: charged, approved by signal, shipped" },
+      { src: tzCancelled, alt: "Tenaz history viewer showing a cancelled order: charged, cancelled, refunded" },
+    ],
+    content: {
+      en: {
+        tagline: "A durable execution engine for Java 21: workflows as plain code that survive crashes.",
+        description:
+          "A workflow engine in the style of Temporal, written from scratch. A business process is ordinary Java, and the engine guarantees it runs to completion even if every machine running it dies along the way. Verified by a deterministic simulator that runs 20,000 seeded fault scenarios in about two minutes, and by tests that kill real worker JVMs.",
+        caseStudy: {
+          problem:
+            "A business process that spans several steps, such as charging a card, waiting days for an approval, and then shipping, is easy to write and hard to make reliable. If the process dies between the charge and the shipment, something has to know that the charge already happened, that the three-day timer is still running, and where to resume. Hand-rolled solutions scatter that knowledge across status columns, cron jobs, and retry tables.",
+          solution:
+            "Tenaz lets the process be written as ordinary Java and makes the code itself durable. Every workflow has an append-only history of events (step scheduled, step completed, timer fired, signal received), and nothing else is persisted: no stack, no variables. When an engine picks a workflow up, it runs the code from the top against that history, and every call the history already answers returns the recorded answer, so a charge that was journaled is never executed again. On top of that sit durable timers that hold no thread, signals, child workflows whose outcome reaches the parent atomically, cancellation that propagates to children, and a version marker for changing workflow code under executions in flight. A Spring Boot starter registers annotated workflow classes as beans, and a read-only history viewer shows every step, timer, and signal of each execution.",
+          architecture:
+            "Three Maven modules: a core engine with no dependency on Spring, a Spring Boot starter, and an example order service. The journal is pluggable, with an in-memory implementation and a PostgreSQL one where an append is a single atomic statement, workers claim work in batches with FOR UPDATE SKIP LOCKED, and LISTEN/NOTIFY wakes them up. One engine owns a workflow at a time under a lease, and every write carries the lease epoch, so a worker that lost its lease to a crash or a long pause is rejected by the journal instead of corrupting the history. The engine never touches the clock, threads, or randomness directly: it gets them from a runtime interface, which is virtual threads and the wall clock in production and a single-threaded, seeded event loop under test.",
+          challenges: [
+            {
+              title: "Proving it survives failures instead of assuming it",
+              description:
+                "The engine runs inside a deterministic simulator: a three-node cluster in one thread, with simulated time and every source of randomness drawn from one seed, while nodes crash, freeze past their leases and wake up as zombies, run on skewed clocks, and see journal writes fail before and after committing. Every run must converge with each effect applied exactly once. 500 seeds run on every build, 20,000 pass in about two minutes, and a failing seed fails identically every time. The simulator is itself tested: with fencing removed from the journal, it finds the resulting double write.",
+            },
+            {
+              title: "Killing real processes, not simulated ones",
+              description:
+                "A second layer of tests simulates nothing. One runs 300 money transfers on a three-node cluster while killing a random node 60 times and asserts that every debit and credit takes effect exactly once. Another starts the workers as separate JVMs on PostgreSQL and has the operating system destroy one every second or so, with no chance to clean up. The balances still match to the cent.",
+            },
+            {
+              title: "Keeping long workflows fast",
+              description:
+                "Replaying the whole history before every step made a workflow slower with each step it took. Keeping the workflow's virtual thread parked with its stack intact between steps, and feeding it only the new events, took a 5,000-step workflow from under 2,000 steps per second to about 40,000 in memory. On PostgreSQL, collapsing an append into one statement and claiming and renewing leases in batches took throughput from about 100 to between 280 and 440 workflows per second, measured on one laptop.",
+            },
+          ],
+          lessonsLearned: [
+            "Determinism has to be designed in, not tested in. Once the engine got time, scheduling, and randomness only through one interface, simulating hours of faults in seconds became possible, and so did reproducing any failure from its seed.",
+            "Stating the limits is part of the engineering. The README lists what the engine does not guarantee (a step in flight during a crash runs at least once, signals are not deduplicated, the benchmarks come from one laptop) next to what it does.",
+          ],
+        },
+      },
+      pt: {
+        tagline: "Um motor de execução durável para Java 21: workflows em código comum que sobrevivem a quedas.",
+        description:
+          "Um motor de workflows no estilo do Temporal, escrito do zero. Um processo de negócio é Java comum, e o motor garante que ele roda até o fim mesmo que todas as máquinas que o executam morram no caminho. Verificado por um simulador determinístico que roda 20.000 cenários de falha em cerca de dois minutos, e por testes que matam JVMs de verdade.",
+        caseStudy: {
+          problem:
+            "Um processo de negócio com várias etapas, como cobrar um cartão, esperar dias por uma aprovação e depois enviar o pedido, é fácil de escrever e difícil de tornar confiável. Se o processo morre entre a cobrança e o envio, alguma coisa precisa saber que a cobrança já aconteceu, que o timer de três dias continua correndo e de onde retomar. Soluções feitas à mão espalham esse conhecimento por colunas de status, cron jobs e tabelas de retry.",
+          solution:
+            "O Tenaz permite escrever o processo como Java comum e torna o próprio código durável. Cada workflow tem um histórico de eventos somente de acréscimo (etapa agendada, etapa concluída, timer disparado, sinal recebido), e nada mais é persistido: nem pilha, nem variáveis. Quando um motor assume um workflow, ele roda o código do início contra esse histórico, e toda chamada que o histórico já responde devolve a resposta gravada, então uma cobrança que foi registrada nunca é executada de novo. Em cima disso há timers duráveis que não ocupam thread, sinais, workflows filhos cujo resultado chega ao pai de forma atômica, cancelamento que se propaga para os filhos e um marcador de versão para mudar o código de um workflow com execuções em andamento. Um starter Spring Boot registra as classes anotadas como beans, e um visualizador de histórico somente leitura mostra cada etapa, timer e sinal de cada execução.",
+          architecture:
+            "Três módulos Maven: um núcleo sem dependência do Spring, um starter Spring Boot e um serviço de pedidos de exemplo. O journal é plugável, com uma implementação em memória e outra em PostgreSQL, em que um acréscimo é uma única instrução atômica, os workers pegam trabalho em lotes com FOR UPDATE SKIP LOCKED e são acordados por LISTEN/NOTIFY. Um motor por vez é dono de um workflow, sob um lease, e toda escrita carrega a época desse lease. Assim, um worker que perdeu o lease por uma queda ou uma pausa longa é rejeitado pelo journal em vez de corromper o histórico. O motor nunca acessa relógio, threads ou aleatoriedade diretamente: recebe tudo de uma interface de runtime, que em produção são virtual threads e o relógio real, e em teste é um event loop de uma thread só, guiado por uma semente.",
+          challenges: [
+            {
+              title: "Provar que sobrevive a falhas em vez de supor",
+              description:
+                "O motor roda dentro de um simulador determinístico: um cluster de três nós em uma única thread, com tempo simulado e toda fonte de aleatoriedade saindo de uma semente, enquanto nós caem, congelam além do lease e acordam como zumbis, rodam com relógios adiantados ou atrasados, e veem escritas no journal falharem antes e depois do commit. Toda execução precisa convergir com cada efeito aplicado exatamente uma vez. 500 sementes rodam a cada build, 20.000 passam em cerca de dois minutos, e uma semente que falha, falha do mesmo jeito todas as vezes. O próprio simulador é testado: sem o fencing no journal, ele encontra a escrita duplicada que resulta disso.",
+            },
+            {
+              title: "Matar processos de verdade, não simulados",
+              description:
+                "Uma segunda camada de testes não simula nada. Um deles executa 300 transferências de dinheiro em um cluster de três nós enquanto mata um nó aleatório 60 vezes, e verifica que cada débito e cada crédito acontece exatamente uma vez. Outro sobe os workers como JVMs separadas sobre PostgreSQL e faz o sistema operacional destruir uma delas a cada segundo, sem chance de limpeza. Os saldos continuam batendo até o centavo.",
+            },
+            {
+              title: "Manter workflows longos rápidos",
+              description:
+                "Reexecutar o histórico inteiro antes de cada etapa deixava um workflow mais lento a cada etapa. Manter a virtual thread do workflow estacionada, com a pilha intacta entre as etapas, e entregar só os eventos novos, levou um workflow de 5.000 etapas de menos de 2.000 etapas por segundo para cerca de 40.000 em memória. No PostgreSQL, reduzir o acréscimo a uma única instrução e tomar e renovar leases em lotes levou a vazão de cerca de 100 para entre 280 e 440 workflows por segundo, medido em um notebook.",
+            },
+          ],
+          lessonsLearned: [
+            "Determinismo precisa ser projetado, não testado depois. Quando o motor passou a receber tempo, agendamento e aleatoriedade por uma única interface, simular horas de falhas em segundos se tornou possível, assim como reproduzir qualquer falha a partir da semente.",
+            "Declarar os limites faz parte da engenharia. O README lista o que o motor não garante (uma etapa em andamento durante uma queda roda pelo menos uma vez, sinais não são deduplicados, os benchmarks vêm de um único notebook) ao lado do que ele garante.",
+          ],
+        },
+      },
+    },
+  },
+  {
+    slug: "capivaradb",
+    name: "CapivaraDB",
+    techStack: ["Go", "PostgreSQL wire protocol", "B+tree", "WAL", "MVCC"],
+    caseStudyTechStack: [
+      "Go",
+      "Standard library only",
+      "PostgreSQL wire protocol v3",
+      "B+tree storage",
+      "Write-ahead log",
+      "MVCC",
+      "Cost-based planner",
+      "sqllogictest",
+      "GitHub Actions",
+    ],
+    githubUrl: "https://github.com/duanjesus/capivaradb",
+    screenshots: [
+      { src: cdbRecovery, alt: "A server killed mid-transaction, and what the next start recovers", bare: true },
+      { src: cdbIsolation, alt: "Two psql sessions and a lost update that does not happen", bare: true },
+      { src: cdbCrashTests, alt: "Crash tests on a simulated disk", bare: true },
+      { src: cdbExplain, alt: "EXPLAIN in psql: the chosen plan and the plan the planner rejected", bare: true },
+    ],
+    content: {
+      en: {
+        tagline: "A relational SQL database written from scratch in Go, speaking the PostgreSQL wire protocol.",
+        description:
+          "Every layer of a database built by hand, with no dependencies outside the Go standard library: the network protocol, the SQL parser, an on-disk B+tree storage engine, write-ahead logging with crash recovery, MVCC transactions, and a cost-based query planner. psql, pgx, and JDBC connect to it as if it were Postgres.",
+        caseStudy: {
+          problem:
+            "A database is the component most backend code trusts without looking inside. Reading about B+trees, write-ahead logs, and snapshot isolation explains what they are, but not why a commit is durable, why a reader never waits for a writer, or why one query plan is a thousand times faster than another. The goal was to find out by building every layer, with real clients on the other end to keep it honest.",
+          solution:
+            "CapivaraDB implements PostgreSQL's wire protocol, so unmodified psql, pgx (Go), and pgjdbc (Java) connect to it. Behind the protocol sit a hand-written SQL parser and binder (joins, grouping, correlated subqueries, DDL), a storage engine of 8 kB checksummed pages with a buffer pool and clustered B+trees, a write-ahead log with ARIES-style recovery so a committed transaction survives the server being killed, multi-version concurrency control with read committed and repeatable read, deadlock detection and vacuum, and a planner that picks indexes and join order by cost from ANALYZE statistics, with EXPLAIN ANALYZE in PostgreSQL's format. Six of the seven planned milestones are done. The remaining one is the executor, so joins are still nested loops and set operations are missing.",
+          architecture:
+            "Three layers that meet at small interfaces: the protocol layer knows nothing about SQL, the engine knows nothing about sockets, and the storage layer only sees keys and values as byte strings. That boundary is what let the engine be replaced milestone by milestone, from a naive in-memory executor to B+trees on disk to MVCC, while the client compatibility tests kept passing. The core uses only the Go standard library, and CI fails if a dependency is added.",
+          challenges: [
+            {
+              title: "Crash recovery that is tested by crashing",
+              description:
+                "The database runs against a simulated disk that fails at a random moment, loses any subset of the writes that were not synced, and tears the rest. After recovery it must match a shadow database that never crashed, across about 800 crashes per run, some of them during recovery itself. A separate test kills a real writer process with SIGKILL a dozen times and checks that every acknowledged commit is still there, whole.",
+            },
+            {
+              title: "Testing the tests",
+              description:
+                "A crash test that passes proves little unless it would fail when the code is wrong. A mutation script breaks 25 durability, isolation, and planner rules one at a time, and the suite must catch each one. That found three blind spots in the crash tests while they were being written.",
+            },
+            {
+              title: "Compatibility measured, not claimed",
+              description:
+                "Results are checked against sqllogictest: 109,414 records at 99.07% passing, with CI failing on any regression. The rate went down from 99.99% when two harder scripts, with joins of up to fifteen tables, joined the run. The planner took one of them from 51.5% in 217 seconds to 100% in 1 second.",
+            },
+          ],
+          lessonsLearned: [
+            "The boundary between layers mattered more than any single algorithm. Because the protocol and the engine only meet at four small interfaces, each milestone could replace what was underneath without breaking a client test.",
+            "A database that overstates what it guarantees is worse than useless, so the limitations are written down as carefully as the features: no true SERIALIZABLE, writes serialised by one lock, and nested-loop joins only until the last milestone lands.",
+          ],
+        },
+      },
+      pt: {
+        tagline: "Um banco de dados SQL relacional escrito do zero em Go, que fala o protocolo do PostgreSQL.",
+        description:
+          "Todas as camadas de um banco de dados feitas à mão, sem dependências fora da biblioteca padrão do Go: o protocolo de rede, o parser SQL, um motor de armazenamento em B+tree no disco, write-ahead log com recuperação de falhas, transações MVCC e um planejador de consultas por custo. psql, pgx e JDBC se conectam a ele como se fosse um Postgres.",
+        caseStudy: {
+          problem:
+            "O banco de dados é o componente em que a maior parte do código de backend confia sem olhar por dentro. Ler sobre B+trees, write-ahead log e snapshot isolation explica o que são, mas não por que um commit é durável, por que um leitor nunca espera um escritor, ou por que um plano de consulta é mil vezes mais rápido que outro. O objetivo foi descobrir construindo cada camada, com clientes reais do outro lado para manter tudo honesto.",
+          solution:
+            "O CapivaraDB implementa o protocolo de rede do PostgreSQL, então psql, pgx (Go) e pgjdbc (Java) se conectam a ele sem modificação. Atrás do protocolo há um parser e um binder SQL escritos à mão (joins, agrupamento, subconsultas correlacionadas, DDL), um motor de armazenamento com páginas de 8 kB com checksum, buffer pool e B+trees clusterizadas, um write-ahead log com recuperação no estilo ARIES, para que uma transação confirmada sobreviva à morte do servidor, controle de concorrência multiversão com read committed e repeatable read, detecção de deadlock e vacuum, e um planejador que escolhe índices e ordem de join por custo a partir das estatísticas do ANALYZE, com EXPLAIN ANALYZE no formato do PostgreSQL. Seis dos sete marcos planejados estão prontos. O que falta é o executor, então os joins ainda são nested loop e as operações de conjunto não existem.",
+          architecture:
+            "Três camadas que se encontram em interfaces pequenas: a camada de protocolo não sabe nada de SQL, o motor não sabe nada de sockets, e o armazenamento só enxerga chaves e valores como sequências de bytes. Essa fronteira é o que permitiu trocar o motor marco a marco, de um executor ingênuo em memória para B+trees em disco e depois MVCC, enquanto os testes de compatibilidade com clientes continuavam passando. O núcleo usa só a biblioteca padrão do Go, e o CI falha se uma dependência for adicionada.",
+          challenges: [
+            {
+              title: "Recuperação de falhas testada com falhas",
+              description:
+                "O banco roda sobre um disco simulado que falha em um momento aleatório, perde qualquer subconjunto das escritas que não foram sincronizadas e corta o resto pela metade. Depois da recuperação, ele precisa ser igual a um banco sombra que nunca caiu, em cerca de 800 quedas por execução, algumas durante a própria recuperação. Um teste separado mata um processo escritor real com SIGKILL uma dúzia de vezes e confere que todo commit confirmado continua lá, inteiro.",
+            },
+            {
+              title: "Testar os testes",
+              description:
+                "Um teste de queda que passa prova pouco se ele não falharia com o código errado. Um script de mutação quebra 25 regras de durabilidade, isolamento e planejamento, uma de cada vez, e a suíte precisa pegar todas. Isso encontrou três pontos cegos nos testes de queda enquanto eles eram escritos.",
+            },
+            {
+              title: "Compatibilidade medida, não declarada",
+              description:
+                "Os resultados são conferidos com o sqllogictest: 109.414 registros com 99,07% de acerto, e o CI falha em qualquer regressão. A taxa caiu de 99,99% quando dois scripts mais difíceis, com joins de até quinze tabelas, entraram na execução. O planejador levou um deles de 51,5% em 217 segundos para 100% em 1 segundo.",
+            },
+          ],
+          lessonsLearned: [
+            "A fronteira entre as camadas importou mais do que qualquer algoritmo isolado. Como o protocolo e o motor só se encontram em quatro interfaces pequenas, cada marco pôde trocar o que estava embaixo sem quebrar um teste de cliente.",
+            "Um banco que promete mais do que garante é pior do que inútil, então as limitações estão escritas com o mesmo cuidado que as funcionalidades: não há SERIALIZABLE de verdade, as escritas são serializadas por um único lock, e os joins são só nested loop até o último marco ficar pronto.",
+          ],
+        },
+      },
+    },
+  },
   {
     slug: "java-patterns-lab",
     name: "Java Patterns Lab",
@@ -85,7 +290,7 @@ export const projects: Project[] = [
           ],
           lessonsLearned: [
             "A shared domain across every example turns a reference catalog into something that reads start to finish, and makes it obvious which real-world problem each pattern actually solves.",
-            "Chosen as the first of the portfolio's five backend-focused projects, deliberately scoped to demonstrate object-oriented design fundamentals before moving on to CRUD architecture, business rules, real-time communication, and infrastructure.",
+            "Deliberately scoped to object-oriented design fundamentals with no framework in the way, the base that the CRUD, business-rule, real-time, and infrastructure projects in this portfolio build on.",
           ],
         },
       },
@@ -114,7 +319,7 @@ export const projects: Project[] = [
           ],
           lessonsLearned: [
             "Um domínio compartilhado em todos os exemplos transforma um catálogo de referência em algo que se lê do início ao fim, e deixa claro qual problema do mundo real cada padrão realmente resolve.",
-            "Escolhido como o primeiro dos cinco projetos de backend do portfólio, propositalmente dimensionado para demonstrar fundamentos de design orientado a objetos antes de avançar para arquitetura CRUD, regras de negócio, comunicação em tempo real e infraestrutura.",
+            "Propositalmente dimensionado para fundamentos de design orientado a objetos, sem framework no caminho: a base sobre a qual os projetos de CRUD, regras de negócio, tempo real e infraestrutura deste portfólio são construídos.",
           ],
         },
       },
@@ -159,7 +364,7 @@ export const projects: Project[] = [
           ],
           lessonsLearned: [
             "Domain-modeling a real-world process end-to-end (institutions → donations → inventory → distributions), not just building CRUD screens, was the biggest design decision; getting the lifecycle right up front avoided reshaping the schema later.",
-            "Chosen as the first of three portfolio projects, deliberately scoped to demonstrate solid architecture and CRUD fundamentals before moving on to business-rule-heavy (CashPilot) and real-time (PulseHub) systems.",
+            "The first full-stack project in this portfolio, deliberately scoped to demonstrate solid architecture and CRUD fundamentals before moving on to business-rule-heavy (CashPilot) and real-time (PulseHub) systems.",
           ],
         },
       },
@@ -188,7 +393,7 @@ export const projects: Project[] = [
           ],
           lessonsLearned: [
             "Modelar de ponta a ponta um processo do mundo real (instituições → doações → estoque → distribuições), e não só telas de CRUD, foi a decisão de design mais importante; acertar o ciclo de vida logo no início evitou remodelar o schema depois.",
-            "Escolhido como o primeiro dos três projetos do portfólio, propositalmente dimensionado para demonstrar arquitetura sólida e fundamentos de CRUD antes de avançar para sistemas com regras de negócio complexas (CashPilot) e tempo real (PulseHub).",
+            "O primeiro projeto full-stack deste portfólio, propositalmente dimensionado para demonstrar arquitetura sólida e fundamentos de CRUD antes de avançar para sistemas com regras de negócio complexas (CashPilot) e tempo real (PulseHub).",
           ],
         },
       },
@@ -243,7 +448,7 @@ export const projects: Project[] = [
           ],
           lessonsLearned: [
             "Business-rule complexity (family sharing, recurring billing, forecasting) is a different kind of hard than CRUD complexity; most of the effort went into getting the data model and idempotency right, not the UI.",
-            "Chosen as the second portfolio project specifically to show a different stack flavor than the first (Flyway instead of auto-DDL, MapStruct instead of manual mapping) and a different kind of engineering problem: business rules over CRUD.",
+            "Built right after Social Supply, specifically to show a different stack flavor (Flyway instead of auto-DDL, MapStruct instead of manual mapping) and a different kind of engineering problem: business rules over CRUD.",
           ],
         },
       },
@@ -272,7 +477,7 @@ export const projects: Project[] = [
           ],
           lessonsLearned: [
             "Complexidade de regra de negócio (compartilhamento familiar, cobrança recorrente, projeção) é um tipo de dificuldade diferente da complexidade de CRUD; a maior parte do esforço foi acertar o modelo de dados e a idempotência, não a interface.",
-            "Escolhido como o segundo projeto do portfólio especificamente para mostrar uma variação de stack diferente do primeiro (Flyway em vez de auto-DDL, MapStruct em vez de mapeamento manual) e um tipo diferente de problema de engenharia: regras de negócio em vez de CRUD.",
+            "Feito logo depois do Social Supply, especificamente para mostrar uma variação de stack diferente (Flyway em vez de auto-DDL, MapStruct em vez de mapeamento manual) e um tipo diferente de problema de engenharia: regras de negócio em vez de CRUD.",
           ],
         },
       },
@@ -327,7 +532,7 @@ export const projects: Project[] = [
           ],
           lessonsLearned: [
             "Real-time systems fail in ways REST APIs don't. A security-provider initialization-order bug only surfaced when booting the full app in Docker, not in isolated unit tests. Green tests alone don't prove a real-time stack actually boots correctly.",
-            "Chosen as the third portfolio project to round out the set: architecture and CRUD (Social Supply), business rules (CashPilot), real-time communication (PulseHub). Three different competencies, three concrete answers to three different interview questions.",
+            "Built to round out a first trio: architecture and CRUD (Social Supply), business rules (CashPilot), real-time communication (PulseHub). Three different competencies, three concrete answers to three different interview questions.",
           ],
         },
       },
@@ -356,7 +561,7 @@ export const projects: Project[] = [
           ],
           lessonsLearned: [
             "Sistemas em tempo real falham de formas que APIs REST não falham. Um bug de ordem de inicialização de provedor de segurança só apareceu ao subir a aplicação completa no Docker, não em testes unitários isolados. Testes verdes sozinhos não provam que uma stack em tempo real realmente sobe corretamente.",
-            "Escolhido como o terceiro projeto do portfólio para completar o conjunto: arquitetura e CRUD (Social Supply), regras de negócio (CashPilot), comunicação em tempo real (PulseHub). Três competências diferentes, três respostas concretas para três perguntas diferentes de entrevista.",
+            "Feito para completar um primeiro trio: arquitetura e CRUD (Social Supply), regras de negócio (CashPilot), comunicação em tempo real (PulseHub). Três competências diferentes, três respostas concretas para três perguntas diferentes de entrevista.",
           ],
         },
       },
@@ -406,7 +611,7 @@ export const projects: Project[] = [
           ],
           lessonsLearned: [
             "Positioning this as infrastructure other services call, not a feature any one service owns, forced real interface discipline: one event contract, one publish path, and every consumer-side concern (retry, dedup, rate limit, fan-out) living entirely on this side of that boundary.",
-            "Chosen as the fifth portfolio project specifically to demonstrate message-queue and observability competency (RabbitMQ, Redis, Prometheus, Grafana) that none of the other four cover.",
+            "Built specifically to demonstrate message-queue and observability competency (RabbitMQ, Redis, Prometheus, Grafana) that the web applications in this portfolio do not cover.",
           ],
         },
       },
@@ -435,7 +640,7 @@ export const projects: Project[] = [
           ],
           lessonsLearned: [
             "Posicionar isso como infraestrutura que outros serviços chamam, e não uma funcionalidade que um serviço qualquer possui, forçou disciplina real de interface: um único contrato de evento, um único caminho de publicação, e toda preocupação do lado consumidor (retry, dedup, rate limit, distribuição) vivendo inteiramente desse lado da fronteira.",
-            "Escolhido como o quinto projeto do portfólio especificamente para demonstrar competência em filas de mensagens e observabilidade (RabbitMQ, Redis, Prometheus, Grafana) que nenhum dos outros quatro cobre.",
+            "Feito especificamente para demonstrar competência em filas de mensagens e observabilidade (RabbitMQ, Redis, Prometheus, Grafana) que as aplicações web deste portfólio não cobrem.",
           ],
         },
       },
@@ -482,7 +687,7 @@ export const projects: Project[] = [
           ],
           lessonsLearned: [
             "Being explicit about what's real government data versus a documented estimate, for both the vehicle catalog and the toll dataset, turned out to matter more for correctness than any single algorithm in the app. Most of the actual engineering effort went into sourcing and verifying data, not computing with it.",
-            "The most complex and recently-shipped project in the portfolio, chosen to show cross-platform mobile delivery (Flutter, Windows and Android from one codebase) and large-scale external-data integration on top of the backend and web competencies the other four projects already cover.",
+            "The only mobile project in the portfolio, chosen to show cross-platform delivery (Flutter, Windows and Android from one codebase) and large-scale external-data integration on top of the backend and web competencies the other projects already cover.",
           ],
         },
       },
@@ -511,7 +716,184 @@ export const projects: Project[] = [
           ],
           lessonsLearned: [
             "Ser explícito sobre o que é dado oficial do governo versus uma estimativa documentada, tanto no catálogo de veículos quanto na base de pedágios, importou mais para a correção do que qualquer algoritmo isolado do app. A maior parte do esforço de engenharia foi buscar e verificar dado, não calcular em cima dele.",
-            "O projeto mais complexo e mais recente do portfólio, escolhido para mostrar entrega mobile multiplataforma (Flutter, Windows e Android a partir de um único código) e integração de dados externos em larga escala, complementando as competências de backend e web que os outros quatro projetos já cobrem.",
+            "O único projeto mobile do portfólio, escolhido para mostrar entrega multiplataforma (Flutter, Windows e Android a partir de um único código) e integração de dados externos em larga escala, complementando as competências de backend e web que os outros projetos já cobrem.",
+          ],
+        },
+      },
+    },
+  },
+  {
+    slug: "classcont-almox",
+    name: "CLASSCONT.ALMOX",
+    techStack: ["Python 3.13", "Django 5.2", "Django REST Framework", "PostgreSQL", "React", "TypeScript"],
+    caseStudyTechStack: [
+      "Python 3.13",
+      "Django 5.2",
+      "Django REST Framework",
+      "PostgreSQL 16",
+      "JWT",
+      "React",
+      "TypeScript",
+      "Tailwind CSS",
+      "WeasyPrint",
+      "pytest",
+      "mypy",
+      "Docker",
+      "GitHub Actions",
+    ],
+    githubUrl: "https://github.com/duanjesus/CLASSCONT.ALMOX",
+    screenshots: [
+      { src: almoxDashboard, alt: "Warehouse back office: stock value, fulfilment queue and reorder alerts" },
+      { src: almoxKardex, alt: "Stock ledger of one material with physical, reserved and available balances" },
+      { src: almoxMateriais, alt: "Materials list with physical, reserved and available stock and average cost" },
+      { src: almoxConsumo, alt: "Department consumption against its monthly quota in the React app" },
+      { src: almoxNova, alt: "New material request in the React app" },
+    ],
+    content: {
+      en: {
+        tagline: "Supply room management for a public agency, in Django and React.",
+        description:
+          "Material requests with manager approval, a monthly quota per department, stock reservation, and full or partial fulfilment, on top of weighted-average costing and an immutable stock ledger. A Django REST API, a React app for staff and managers, and a back office in Django templates for the supply room.",
+        caseStudy: {
+          problem:
+            "The supply room of a public agency has to answer three questions at any time: what is in stock and what it is worth, who asked for what and who approved it, and whether a department is spending beyond its monthly quota. Spreadsheets answer none of them reliably once two people fulfil requests at the same moment, or someone back-dates an invoice into a month that was already closed.",
+          solution:
+            "Departments request materials in a React app, their manager approves within a monthly quota, and the supply room fulfils from a back office built with Django templates. A request is a state machine whose transition table is the rule: what is not in the table is forbidden. Nobody evaluates their own request, a manager can reduce quantities but never raise them, and an approval that exceeds the quota goes to a higher approver without reserving anything. Stock is valued by weighted-average cost, every movement lands in an immutable ledger that is the source of truth, approved requests reserve stock, fulfilment can be partial, and a closed month accepts no further entries, back-dated ones included. An ABC curve and a reorder report are built on the ledger, and the delivery slip is generated as a PDF.",
+          architecture:
+            "The business rules live in a pure Python package that does not import Django (average cost, the request state machine, reservation, quota, ABC curve, monthly closing) and are tested without a database. Services wrap them with transactions and row locks, and the DRF API and the Django-templates back office are thin layers over the same services. Permission checks are pure functions shared by the API, the back office, and the services, and the API tells the React app which actions the current user may take, so the front end only draws what the back end will accept. PostgreSQL holds the last line with check and unique constraints.",
+          challenges: [
+            {
+              title: "No negative stock under concurrent fulfilment",
+              description:
+                "Two clerks fulfilling at the same time must never drive a balance below zero. Materials are locked with SELECT FOR UPDATE inside a transaction, always in id order to avoid deadlocks, the pure rule refuses an insufficient balance, and a CHECK constraint in the database is the final guard.",
+            },
+            {
+              title: "A ledger that cannot be edited",
+              description:
+                "Stock movements are immutable: saving over an existing row or deleting one raises an error, and a mistake is fixed with an adjustment entry. The balance stored on each material is a cache updated in the same transaction as the ledger, and a management command audits one against the other. Money is Decimal throughout, with four decimal places on the unit cost so rounding error does not accumulate with each receipt.",
+            },
+          ],
+          lessonsLearned: [
+            "Keeping the rules in plain Python made them cheap to test and independent of the framework: the unit tests for costing, the state machine, reservation, and quota run without a database, and the functional tests cover the services, the API, and every screen of the back office.",
+            "Built after CLASSCONT.RHFOLHA, the same kind of administrative system in Symfony. The second time, the layering was the same (pure domain, services, thin API and back office) and only the framework changed, which is good evidence that the design does not depend on the framework.",
+          ],
+        },
+      },
+      pt: {
+        tagline: "Almoxarifado de um órgão público, em Django e React.",
+        description:
+          "Requisições de material com aprovação da chefia, cota mensal por setor, reserva de saldo e atendimento total ou parcial, sobre custo médio ponderado e um kardex imutável. Uma API REST em Django, um app React para servidores e chefias, e um painel em templates Django para o almoxarifado.",
+        caseStudy: {
+          problem:
+            "O almoxarifado de um órgão público precisa responder três perguntas a qualquer momento: o que há em estoque e quanto vale, quem pediu o quê e quem aprovou, e se um setor está gastando além da sua cota mensal. Planilhas não respondem nenhuma delas de forma confiável quando duas pessoas atendem requisições ao mesmo tempo, ou quando alguém lança uma nota com data retroativa em um mês que já foi fechado.",
+          solution:
+            "Os setores pedem material em um app React, a chefia aprova dentro de uma cota mensal, e o almoxarifado atende por um painel feito com templates Django. A requisição é uma máquina de estados cuja tabela de transições é a regra: o que não está na tabela é proibido. Ninguém avalia a própria requisição, a chefia pode reduzir quantidades mas nunca aumentar, e uma aprovação que estoura a cota sobe para o gestor sem reservar nada. O estoque é valorado pelo custo médio ponderado, todo movimento vai para um kardex imutável que é a fonte da verdade, requisições aprovadas reservam saldo, o atendimento pode ser parcial, e um mês fechado não aceita mais lançamentos, nem com data retroativa. A curva ABC e o relatório de reposição são calculados sobre o kardex, e a guia de saída é gerada em PDF.",
+          architecture:
+            "As regras de negócio ficam em um pacote de Python puro, que não importa o Django (custo médio, a máquina de estados da requisição, reserva, cota, curva ABC, fechamento mensal), e são testadas sem banco. Os serviços cuidam de transação e travas de linha, e a API em DRF e o painel em templates Django são camadas finas sobre os mesmos serviços. As regras de permissão são funções puras usadas pela API, pelo painel e pelos serviços, e a API informa ao app React quais ações o usuário atual pode executar, então o front só desenha o que o back vai aceitar. O PostgreSQL segura a última linha com constraints de check e de unicidade.",
+          challenges: [
+            {
+              title: "Estoque nunca negativo com atendimentos simultâneos",
+              description:
+                "Dois almoxarifes atendendo ao mesmo tempo não podem levar um saldo abaixo de zero. Os materiais são travados com SELECT FOR UPDATE dentro de uma transação, sempre em ordem de id para evitar deadlock, a regra pura recusa saldo insuficiente, e uma constraint CHECK no banco é a última barreira.",
+            },
+            {
+              title: "Um kardex que não pode ser editado",
+              description:
+                "As movimentações de estoque são imutáveis: salvar por cima de uma linha existente ou excluí-la levanta erro, e um engano se corrige com um lançamento de ajuste. O saldo gravado em cada material é um cache atualizado na mesma transação que o kardex, e um comando de gerenciamento audita um contra o outro. Dinheiro é sempre Decimal, com quatro casas no custo unitário para o erro de arredondamento não se acumular a cada entrada.",
+            },
+          ],
+          lessonsLearned: [
+            "Manter as regras em Python puro deixou os testes baratos e independentes do framework: os testes unitários de custo, máquina de estados, reserva e cota rodam sem banco, e os funcionais cobrem os serviços, a API e todas as telas do painel.",
+            "Feito depois do CLASSCONT.RHFOLHA, o mesmo tipo de sistema administrativo em Symfony. Na segunda vez, as camadas foram as mesmas (domínio puro, serviços, API e painel finos) e só o framework mudou, o que é uma boa evidência de que o desenho não depende do framework.",
+          ],
+        },
+      },
+    },
+  },
+  {
+    slug: "classcont-rhfolha",
+    name: "CLASSCONT.RHFOLHA",
+    techStack: ["PHP 8.4", "Symfony 7.4", "Doctrine", "PostgreSQL", "Twig", "React", "TypeScript"],
+    caseStudyTechStack: [
+      "PHP 8.4",
+      "Symfony 7.4",
+      "Doctrine",
+      "PostgreSQL 16",
+      "JWT",
+      "Twig",
+      "React",
+      "TypeScript",
+      "Tailwind CSS",
+      "Dompdf",
+      "PHPUnit",
+      "PHPStan",
+      "Docker",
+      "GitHub Actions",
+    ],
+    githubUrl: "https://github.com/duanjesus/CLASSCONT.RHFOLHA",
+    screenshots: [
+      { src: rhEspelho, alt: "Monthly timesheet with punches, hours balance and excused days in the React app" },
+      { src: rhInicio, alt: "Clock-in screen with the day's punches and the month summary" },
+      { src: rhJustificativas, alt: "Absence justifications with pending, approved and refused requests" },
+      { src: rhPainel, alt: "HR back office: pending justifications and the month still open" },
+      { src: rhFolhaAuxilio, alt: "Commuter benefit payroll: gross amount, proportional discount and net per employee" },
+    ],
+    content: {
+      en: {
+        tagline: "Timesheets and commuter-benefit payroll for public staff, in Symfony and React.",
+        description:
+          "Electronic timesheets, an hours bank, absence justifications approved by the direct manager, and a commuter benefit calculated from the days actually worked. A Symfony REST API, a React app for staff and managers, and a Twig back office for HR.",
+        caseStudy: {
+          problem:
+            "Timekeeping looks like a table of clock-ins until the rules arrive: an odd number of punches, a tolerance of a few minutes, holidays, days before the hire date, an absence that was later excused. A benefit paid per day worked depends on all of them, and a month that payroll has already closed must not change afterwards.",
+          solution:
+            "Staff clock in and out in a React app and see their monthly timesheet and hours balance. Punches are paired in order, a day with an odd number of punches is marked incomplete, a ten-minute daily tolerance is applied, and a working day with no punches and no excuse counts as an absence. An employee can ask for a day to be excused, and the direct manager of their department or HR decides. Nobody evaluates their own request, a refusal needs a reason, and the result goes out by email. The commuter benefit is then computed from the timesheet: the daily fare times the days actually worked, minus a discount of 6% of base salary proportional to those days, never below zero. HR closes the month in a Twig back office, and from then on that month's justifications are locked.",
+          architecture:
+            "Pure domain classes with no framework dependency hold the calculations: the timesheet calculator, the benefit calculator, and a value object for the month. Services apply them, thin API controllers validate input through mapped DTOs, and the HR back office uses Symfony Forms and Twig. Two firewalls separate a stateless JWT API from the session-based back office, and Voters decide who can see or evaluate what. The same Twig partial renders the timesheet on screen and in the PDF.",
+          challenges: [
+            {
+              title: "Money without floats",
+              description:
+                "Benefit amounts are computed in integer cents, never in floating point, and the DECIMAL column travels as a string, so a proportional discount rounds the same way every time.",
+            },
+            {
+              title: "Roles that cannot drift from the org chart",
+              description:
+                "Being a manager is not stored anywhere: it is derived from being the head of some department, so changing the head in the registry changes the permissions at once. Deactivating an employee also cuts access immediately, even with a JWT already issued, because the check runs on every authentication. Employees are never deleted, since timesheet history is an official record.",
+            },
+          ],
+          lessonsLearned: [
+            "Putting the calculations in plain classes meant the hard cases (tolerance, absences, excused days, holidays, the proportional discount) are covered by unit tests that need neither a database nor HTTP.",
+            "Built to work in a stack outside Java, with an administrative domain that has real rules instead of another CRUD, and to check that the layering used in the Java projects carries over to a different language and framework.",
+          ],
+        },
+      },
+      pt: {
+        tagline: "Ponto eletrônico e auxílio-transporte para servidores públicos, em Symfony e React.",
+        description:
+          "Folha de ponto eletrônica, banco de horas, justificativas de falta aprovadas pela chefia imediata e auxílio-transporte calculado a partir dos dias efetivamente trabalhados. Uma API REST em Symfony, um app React para servidores e chefias, e um painel em Twig para o RH.",
+        caseStudy: {
+          problem:
+            "Controle de ponto parece uma tabela de batidas até as regras chegarem: número ímpar de batidas, tolerância de alguns minutos, feriados, dias anteriores à admissão, uma falta que foi abonada depois. Um benefício pago por dia trabalhado depende de todas elas, e um mês que a folha já fechou não pode mudar depois.",
+          solution:
+            "Os servidores batem o ponto em um app React e veem o espelho mensal e o banco de horas. As batidas são pareadas em ordem, um dia com número ímpar de batidas fica incompleto, há uma tolerância de dez minutos por dia, e um dia útil sem batida e sem abono conta como falta. O servidor pode pedir o abono de um dia, e a chefia imediata do setor dele ou o RH decide. Ninguém avalia o próprio pedido, a recusa exige motivo, e o resultado vai por e-mail. O auxílio-transporte é então calculado a partir do ponto: o valor diário das conduções vezes os dias efetivamente trabalhados, menos um desconto de 6% do salário-base proporcional a esses dias, nunca abaixo de zero. O RH fecha o mês em um painel em Twig, e a partir daí as justificativas daquele mês ficam bloqueadas.",
+          architecture:
+            "Classes de domínio puras, sem dependência de framework, guardam os cálculos: a calculadora do espelho, a calculadora do auxílio e um value object para a competência. Os serviços aplicam essas regras, controllers finos na API validam a entrada com DTOs mapeados, e o painel do RH usa Symfony Forms e Twig. Dois firewalls separam uma API JWT sem estado do painel com sessão, e os Voters decidem quem pode ver ou avaliar o quê. O mesmo partial Twig renderiza o espelho na tela e no PDF.",
+          challenges: [
+            {
+              title: "Dinheiro sem float",
+              description:
+                "Os valores do auxílio são calculados em centavos inteiros, nunca em ponto flutuante, e a coluna DECIMAL trafega como string, então um desconto proporcional arredonda sempre do mesmo jeito.",
+            },
+            {
+              title: "Papéis que não saem de sincronia com o organograma",
+              description:
+                "Ser chefia não fica gravado em lugar nenhum: é derivado de ser chefe de algum setor, então trocar o chefe no cadastro muda as permissões na hora. Desativar um funcionário também corta o acesso imediatamente, mesmo com um JWT já emitido, porque a checagem roda em toda autenticação. Funcionários nunca são excluídos, porque o histórico de ponto é documento funcional.",
+            },
+          ],
+          lessonsLearned: [
+            "Colocar os cálculos em classes simples fez com que os casos difíceis (tolerância, faltas, abonos, feriados, o desconto proporcional) sejam cobertos por testes unitários que não precisam de banco nem de HTTP.",
+            "Feito para trabalhar em uma stack fora do Java, com um domínio administrativo que tem regras de verdade em vez de mais um CRUD, e para conferir que as camadas usadas nos projetos Java se mantêm em outra linguagem e outro framework.",
           ],
         },
       },

@@ -21,7 +21,7 @@ export const timeline: Record<Locale, TimelineItem[]> = {
     {
       year: "2026",
       title: "Open Source Projects",
-      description: "Shipped three full-stack portfolio projects: Social Supply, CashPilot, and PulseHub.",
+      description: "Published ten projects on GitHub, from full-stack applications in Spring Boot and React to a durable workflow engine in Java and a SQL database written from scratch in Go.",
     },
     {
       year: "Now",
@@ -43,7 +43,7 @@ export const timeline: Record<Locale, TimelineItem[]> = {
     {
       year: "2026",
       title: "Projetos Open Source",
-      description: "Lancei três projetos completos de portfólio: Social Supply, CashPilot e PulseHub.",
+      description: "Publiquei dez projetos no GitHub, de aplicações full-stack em Spring Boot e React a um motor de workflows duráveis em Java e um banco de dados SQL escrito do zero em Go.",
     },
     {
       year: "Hoje",

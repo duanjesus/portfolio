@@ -5,6 +5,7 @@ import type { Tone } from "../layout/Section";
 import { Badge } from "./Badge";
 import { Button } from "./Button";
 import { BrowserFrame } from "./BrowserFrame";
+import { ProjectName } from "./ProjectName";
 import { useLocale } from "../../i18n/locale";
 import { strings } from "../../i18n/strings";
 
@@ -34,14 +35,14 @@ export function ProjectCard({ project, tone }: ProjectCardProps) {
             isDark ? "text-shadow-dark text-white" : "text-shadow-light text-ink"
           }`}
         >
-          {project.name}
+          <ProjectName name={project.name} />
         </h3>
         <p className={`mt-4 text-lg md:text-xl ${isDark ? "text-white/60" : "text-ink/60"}`}>{content.tagline}</p>
       </motion.div>
 
       {project.screenshots.length > 0 && (
         <div className="mx-auto mt-14 max-w-4xl">
-          <BrowserFrame src={project.screenshots[0].src} alt={project.screenshots[0].alt} />
+          <BrowserFrame {...project.screenshots[0]} />
         </div>
       )}
 

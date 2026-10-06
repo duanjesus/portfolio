@@ -5,6 +5,7 @@ import { Section } from "../components/layout/Section";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
 import { BrowserFrame } from "../components/ui/BrowserFrame";
+import { ProjectName } from "../components/ui/ProjectName";
 import { getProjectBySlug } from "../data/projects";
 import { useLocale } from "../i18n/locale";
 import { strings } from "../i18n/strings";
@@ -27,6 +28,8 @@ export function CaseStudy() {
   const content = project.content[locale];
   const { caseStudy } = content;
   const projectsHref = locale === "en" ? `/#${project.slug}` : `/pt#${project.slug}`;
+  const gallery = project.screenshots.slice(1);
+  const terminalGallery = gallery.every((shot) => shot.bare);
 
   return (
     <article>
@@ -42,7 +45,7 @@ export function CaseStudy() {
           className="mx-auto mt-10 max-w-2xl text-center"
         >
           <h1 className="text-shadow-dark text-5xl font-semibold tracking-tight text-white md:text-6xl">
-            {project.name}
+            <ProjectName name={project.name} />
           </h1>
           <p className="mt-4 text-xl text-white/60">{content.tagline}</p>
           <div className="mt-8">
@@ -55,7 +58,7 @@ export function CaseStudy() {
 
         {project.screenshots.length > 0 && (
           <div className="mx-auto mt-16 max-w-4xl">
-            <BrowserFrame src={project.screenshots[0].src} alt={project.screenshots[0].alt} />
+            <BrowserFrame {...project.screenshots[0]} />
           </div>
         )}
       </Section>
@@ -74,10 +77,10 @@ export function CaseStudy() {
         <motion.div {...fadeUp} className="mt-16">
           <h2 className="text-sm font-semibold uppercase tracking-widest text-ink/40">{t.architecture}</h2>
           <p className="mt-4 text-lg leading-relaxed text-ink/80">{caseStudy.architecture}</p>
-          {project.screenshots.length > 1 && (
-            <div className="mt-8 grid gap-6 sm:grid-cols-2">
-              {project.screenshots.slice(1).map((shot) => (
-                <BrowserFrame key={shot.src} src={shot.src} alt={shot.alt} />
+          {gallery.length > 0 && (
+            <div className={`mt-8 grid items-start gap-6 ${terminalGallery ? "" : "sm:grid-cols-2"}`}>
+              {gallery.map((shot) => (
+                <BrowserFrame key={shot.src} {...shot} />
               ))}
             </div>
           )}
