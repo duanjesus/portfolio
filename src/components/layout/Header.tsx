@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
@@ -14,6 +14,18 @@ export function Header() {
   const locale = useLocale();
   const { pathname, hash } = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  // Section the mobile menu was asked to open. The scroll waits for the menu to finish closing:
+  // the menu sits inside the sticky header, so collapsing it moves the page under the reader.
+  const pendingSection = useRef<string | null>(null);
+  const closeMenuAndGoTo = (href: string) => {
+    pendingSection.current = href.split("#")[1] ?? null;
+    setMobileOpen(false);
+  };
+  const scrollToPendingSection = () => {
+    const id = pendingSection.current;
+    pendingSection.current = null;
+    if (id) document.getElementById(id)?.scrollIntoView();
+  };
   const t = strings[locale];
   const homeHref = locale === "en" ? "/" : "/pt";
   const hashHref = (id: string) => (locale === "en" ? `/#${id}` : `/pt#${id}`);
@@ -79,7 +91,7 @@ export function Header() {
         </div>
       </div>
 
-      <AnimatePresence>
+      <AnimatePresence onExitComplete={scrollToPendingSection}>
         {mobileOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
@@ -100,7 +112,7 @@ export function Header() {
                     <a
                       key={item.key}
                       href={item.href}
-                      onClick={() => setMobileOpen(false)}
+                      onClick={() => closeMenuAndGoTo(item.href)}
                       className="text-white/80 transition-colors hover:text-white"
                     >
                       {item.label}
@@ -111,7 +123,7 @@ export function Header() {
 
               <a
                 href={hashHref("about")}
-                onClick={() => setMobileOpen(false)}
+                onClick={() => closeMenuAndGoTo(hashHref("about"))}
                 className="text-sm font-semibold uppercase tracking-widest text-white/40 transition-colors hover:text-white"
               >
                 {t.nav.about}

@@ -1,0 +1,98 @@
+{
+  "nome": "portfolio",
+  "descricao": "Portfólio (duanjesus.dev): versão de produção servida localmente, em inglês e português",
+  "rede": "bridge",
+  "tuneis": {
+    "4173": "host.docker.internal:4173"
+  },
+  "urls": {
+    "site": "http://localhost:4173/"
+  },
+  "ambiente": {
+    "pronto": [
+      "http://localhost:4173/"
+    ],
+    "antesDeSubir": [
+      "npm run build"
+    ],
+    "servidor": [
+      "node",
+      "node_modules/vite/bin/vite.js",
+      "preview",
+      "--host",
+      "0.0.0.0",
+      "--port",
+      "4173",
+      "--strictPort"
+    ],
+    "esperaS": 60
+  },
+  "limites": {
+    "lentoMs": 500,
+    "respostaGrandeKb": 800
+  },
+  "explorar": {
+    "evitar": [
+      "resume",
+      "currículo"
+    ]
+  },
+  "padroes": {
+    "operadores": 4
+  },
+  "personas": [
+    {
+      "nome": "recrutador no computador (inglês)",
+      "usuario": "/",
+      "entrada": "site",
+      "fluxos": {
+        "site: abrir um estudo de caso": 5,
+        "site: trocar de idioma": 2,
+        "site: navegar pelas seções": 2,
+        "site: conferir os links externos": 1,
+        "site: baixar o currículo": 1,
+        "site: endereço de projeto que não existe": 1,
+        "site: ir para uma seção a partir de um estudo de caso": 2
+      }
+    },
+    {
+      "nome": "recrutadora no celular (português)",
+      "usuario": "/pt",
+      "tela": "celular",
+      "entrada": "site",
+      "fluxos": {
+        "site: abrir um estudo de caso": 5,
+        "site: trocar de idioma": 2,
+        "site: navegar pelas seções": 3,
+        "site: baixar o currículo": 1,
+        "site: ir para uma seção a partir de um estudo de caso": 2
+      }
+    },
+    {
+      "nome": "recrutadora no computador (português)",
+      "usuario": "/pt",
+      "entrada": "site",
+      "fluxos": {
+        "site: abrir um estudo de caso": 5,
+        "site: trocar de idioma": 2,
+        "site: navegar pelas seções": 2,
+        "site: conferir os links externos": 1,
+        "site: endereço de projeto que não existe": 1,
+        "site: ir para uma seção a partir de um estudo de caso": 2
+      }
+    },
+    {
+      "nome": "recrutador no celular (inglês)",
+      "usuario": "/",
+      "tela": "celular",
+      "entrada": "site",
+      "fluxos": {
+        "site: abrir um estudo de caso": 5,
+        "site: trocar de idioma": 2,
+        "site: navegar pelas seções": 3,
+        "site: baixar o currículo": 1,
+        "site: ir para uma seção a partir de um estudo de caso": 2
+      }
+    }
+  ]
+}
