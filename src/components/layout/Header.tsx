@@ -9,6 +9,7 @@ import { useLocale, otherLocalePath } from "../../i18n/locale";
 import { strings } from "../../i18n/strings";
 import { projects } from "../../data/projects";
 import { contactLinks } from "../../data/contactLinks";
+import { scrollToSection } from "../../lib/scrollToSection";
 
 export function Header() {
   const locale = useLocale();
@@ -24,7 +25,7 @@ export function Header() {
   const scrollToPendingSection = () => {
     const id = pendingSection.current;
     pendingSection.current = null;
-    if (id) document.getElementById(id)?.scrollIntoView();
+    if (id) scrollToSection(id);
   };
   const t = strings[locale];
   const homeHref = locale === "en" ? "/" : "/pt";

@@ -3,8 +3,20 @@
 //   marreta                     quatro visitantes seguindo os fluxos abaixo
 //   marreta --modo explorar     navegação sem roteiro
 // O site testado é o de produção (npm run build + vite preview), servido só nesta máquina.
-import type { Page } from 'playwright'
+import type { BrowserContext, Page } from 'playwright'
 import type { Fluxo } from '../../marreta/src/tipos.ts'
+
+/**
+ * No site publicado as imagens chegam depois do texto. Servidas desta máquina elas chegam na hora,
+ * e isso esconde problemas de layout que só aparecem com rede de verdade (página que cresce depois
+ * de rolar até uma seção). Aqui cada imagem demora um pouco, como na internet.
+ */
+export async function preparar(context: BrowserContext): Promise<void> {
+  await context.route(/\.(png|jpe?g|webp|gif)(\?.*)?$/, async (rota) => {
+    await new Promise((r) => setTimeout(r, 400 + Math.random() * 800))
+    await rota.fallback().catch(() => {})
+  })
+}
 
 /** Links externos já conferidos nesta rodada (cada endereço é consultado uma vez só). */
 const conferidos = new Set<string>()
@@ -47,9 +59,9 @@ const abrirEstudoDeCaso: Fluxo = async (ctx) => {
   await page.locator(`main a[href$="#${slug}"]`).first().click()
   await page.waitForURL((url) => !url.pathname.includes('/projects/'))
   // Volta para o cartão do mesmo projeto, não para o topo da página
-  await page.waitForTimeout(1500)
+  await page.waitForTimeout(3500)
   const topo = await page.evaluate((id) => Math.round(document.getElementById(id)?.getBoundingClientRect().top ?? NaN), slug)
-  if (!(topo > -60 && topo < 700)) throw new Error(`Ao voltar do estudo de caso, a página não parou no projeto ${slug}: o cartão dele está a ${topo}px do topo da tela.`)
+  if (!(topo > -60 && topo < 300)) throw new Error(`Ao voltar do estudo de caso, a página não parou no projeto ${slug}: o cartão dele está a ${topo}px do topo da tela.`)
 }
 
 const trocarDeIdioma: Fluxo = async (ctx) => {
@@ -77,9 +89,9 @@ const navegarPelasSecoes: Fluxo = async (ctx) => {
   h.passo(`tocar em ${secao} no menu`)
   await page.locator(`header a[href$="#${secao}"]`).locator('visible=true').first().click()
   // O título da seção precisa parar perto do topo da tela (e ficar lá depois que o menu fecha)
-  await page.waitForTimeout(2500)
+  await page.waitForTimeout(3500)
   const onde = await page.evaluate((id) => ({ topo: Math.round(document.getElementById(id)?.getBoundingClientRect().top ?? NaN), rolagem: Math.round(window.scrollY), altura: window.innerHeight }), secao)
-  if (!(onde.topo > -60 && onde.topo < onde.altura * 0.6))
+  if (!(onde.topo > -60 && onde.topo < 300))
     throw new Error(`Depois de tocar em "${secao}" no menu, a seção não ficou à vista: o topo dela está a ${onde.topo}px do topo da tela (rolagem da página: ${onde.rolagem}px, altura da tela: ${onde.altura}px).`)
   await h.pausa(1000, 2500)
 }
@@ -137,9 +149,9 @@ const secaoAPartirDeUmEstudo: Fluxo = async (ctx) => {
   h.passo('tocar em about no menu, estando fora da página inicial')
   await page.locator('header a[href$="#about"]').locator('visible=true').first().click()
   await page.waitForURL((url) => url.hash === '#about')
-  await page.waitForTimeout(2500)
+  await page.waitForTimeout(3500)
   const onde = await page.evaluate(() => ({ topo: Math.round(document.getElementById('about')?.getBoundingClientRect().top ?? NaN), altura: window.innerHeight }))
-  if (!(onde.topo > -60 && onde.topo < onde.altura * 0.6)) throw new Error(`Vindo de um estudo de caso, tocar em "about" não levou à seção: o topo dela está a ${onde.topo}px do topo da tela.`)
+  if (!(onde.topo > -60 && onde.topo < 300)) throw new Error(`Vindo de um estudo de caso, tocar em "about" não levou à seção: o topo dela está a ${onde.topo}px do topo da tela.`)
 }
 
 export const entrar: Record<string, Fluxo> = { site: entrarNoSite }

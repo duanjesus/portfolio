@@ -6,6 +6,7 @@ import { Home } from "./pages/Home";
 import { CaseStudy } from "./pages/CaseStudy";
 import { LocaleContext, localeFromPathname } from "./i18n/locale";
 import { strings } from "./i18n/strings";
+import { scrollToSection } from "./lib/scrollToSection";
 
 function ScrollToTop() {
   const { pathname, hash, key } = useLocation();
@@ -18,9 +19,7 @@ function ScrollToTop() {
     // The browser only scrolls to a #section by itself when the element already exists and the
     // navigation is a plain same-page anchor. Router links ("Back to projects") and first loads
     // (the section is rendered by React after the page arrives) need the scroll done here.
-    const id = decodeURIComponent(hash.slice(1));
-    const frame = requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView());
-    return () => cancelAnimationFrame(frame);
+    return scrollToSection(decodeURIComponent(hash.slice(1)));
   }, [pathname, hash, key]);
 
   return null;
