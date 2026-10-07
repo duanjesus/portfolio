@@ -513,7 +513,7 @@ export const projects: Project[] = [
   {
     slug: "pulsehub",
     name: "PulseHub",
-    techStack: ["Java 21", "Spring Boot 3", "WebSocket/STOMP", "WebRTC", "PostgreSQL", "React", "TypeScript"],
+    techStack: ["Java 21", "Spring Boot 3", "WebSocket/STOMP", "WebRTC", "Redis", "PostgreSQL", "React", "TypeScript"],
     caseStudyTechStack: [
       "Java 21",
       "Spring Boot 3",
@@ -521,6 +521,8 @@ export const projects: Project[] = [
       "WebSocket",
       "SockJS",
       "WebRTC",
+      "Redis",
+      "Nginx",
       "PostgreSQL",
       "React",
       "TypeScript",
@@ -537,16 +539,16 @@ export const projects: Project[] = [
     ],
     content: {
       en: {
-        tagline: "Real-time chat built on WebSockets and STOMP.",
+        tagline: "Real-time chat on WebSockets and STOMP, scaled across replicas with Redis.",
         description:
-          "A real-time communication platform with private and group messaging, typing indicators, presence, read receipts, voice messages, 1:1 video calls over WebRTC, and Web Push notifications, built to prove hands-on WebSocket/STOMP experience, not just REST.",
+          "A real-time communication platform with private and group messaging, typing indicators, presence, read receipts, voice messages, 1:1 video calls over WebRTC, and Web Push notifications. It runs as several API replicas behind a load balancer, with Redis pub/sub carrying every real-time event between them. Built to prove hands-on WebSocket/STOMP experience, not just REST.",
         caseStudy: {
           problem:
             "Most portfolio projects stop at REST CRUD. Recruiters asking \"do you know WebSockets?\" need a concrete answer, not a theoretical one. That meant building something where real-time state (presence, typing, delivery) is the actual product, not a bolt-on feature.",
           solution:
-            "PulseHub authenticates STOMP connections with the same JWT used over REST, then pushes private messages, typing indicators, and read receipts to per-user queues while presence broadcasts to a public topic. Conversations support both 1:1 and named groups under one unified model, messages can be text or in-browser-recorded voice notes, and notifications reach the user even with the tab closed via real Web Push (VAPID), not just an in-app toast. Direct chats can also start a 1:1 video call over WebRTC: the server only relays the handshake through STOMP, and audio and video flow directly between the two browsers.",
+            "PulseHub authenticates STOMP connections with the same JWT used over REST, then pushes private messages, typing indicators, and read receipts to per-user queues while presence broadcasts to a public topic. Conversations support both 1:1 and named groups under one unified model, messages can be text or in-browser-recorded voice notes, and notifications reach the user even with the tab closed via real Web Push (VAPID), not just an in-app toast. Direct chats can also start a 1:1 video call over WebRTC: the server only relays the handshake through STOMP, and audio and video flow directly between the two browsers. The API scales horizontally: two users can hold their sockets on different replicas and everything still reaches them, because each replica publishes outgoing events to Redis and delivers the ones meant for its own connections.",
           architecture:
-            "Spring Boot 3 + Java 21 backend with STOMP over SockJS for everything real-time and JWT-secured REST for everything else, PostgreSQL with Flyway for persistence. Frontend is React + TypeScript + Vite, deliberately splitting state: TanStack Query for anything fetched-once-and-cached (contacts, history), Zustand for anything arriving continuously over the socket (presence, typing).",
+            "Spring Boot 3 + Java 21 backend with STOMP over SockJS for everything real-time and JWT-secured REST for everything else, PostgreSQL with Flyway for persistence. Frontend is React + TypeScript + Vite, deliberately splitting state: TanStack Query for anything fetched-once-and-cached (contacts, history), Zustand for anything arriving continuously over the socket (presence, typing). In Docker Compose the API runs as two replicas behind nginx, which finds replicas through Docker DNS (a third one starts taking traffic without a reload) and keeps each SockJS session on one replica. Redis pub/sub is the only delivery path between replicas, and a short Redis lock keeps the scheduled presence job from running on all of them at once.",
           challenges: [
             {
               title: "One conversation model for 1:1 and group chat",
@@ -558,24 +560,30 @@ export const projects: Project[] = [
               description:
                 "Rather than duplicating persist-broadcast-notify logic for a new message type, both text and in-browser-recorded voice messages route through the same dispatch service, so presence, notifications, and delivery behave identically regardless of message type.",
             },
+            {
+              title: "A WebSocket lives on one server",
+              description:
+                "With two replicas, the one that handles a message may not be the one holding the recipient's socket. Redis does not speak STOMP, so it cannot simply replace the broker: each replica keeps its own in-memory broker and every outgoing event goes through a Redis channel that all replicas listen to. An end-to-end check puts two real browsers on different replicas, confirms that messages, read receipts, typing, presence and a video call cross between them, then kills the replica holding one user's socket in the middle of a call. The video keeps playing because media is peer to peer, the socket reconnects to the surviving replica, and the call is hung up through it.",
+            },
           ],
           lessonsLearned: [
             "Real-time systems fail in ways REST APIs don't. A security-provider initialization-order bug only surfaced when booting the full app in Docker, not in isolated unit tests. Green tests alone don't prove a real-time stack actually boots correctly.",
+            "The same held for scaling. With every unit test green, the first multi-replica run put every WebSocket on the same replica: nginx's consistent hash treats the several addresses behind one DNS name as a single server. Only a test that read which replica each socket had actually landed on could catch it.",
             "Built to round out a first trio: architecture and CRUD (Social Supply), business rules (CashPilot), real-time communication (PulseHub). Three different competencies, three concrete answers to three different interview questions.",
           ],
         },
       },
       pt: {
-        tagline: "Chat em tempo real construído com WebSockets e STOMP.",
+        tagline: "Chat em tempo real com WebSockets e STOMP, escalado entre réplicas com Redis.",
         description:
-          "Uma plataforma de comunicação em tempo real com mensagens privadas e em grupo, indicador de digitação, presença, confirmação de leitura, mensagens de voz, chamadas de vídeo 1:1 via WebRTC e notificações push, construída para provar experiência prática com WebSocket/STOMP, não só REST.",
+          "Uma plataforma de comunicação em tempo real com mensagens privadas e em grupo, indicador de digitação, presença, confirmação de leitura, mensagens de voz, chamadas de vídeo 1:1 via WebRTC e notificações push. Roda como várias réplicas da API atrás de um load balancer, com Redis pub/sub levando cada evento em tempo real de uma para a outra. Construída para provar experiência prática com WebSocket/STOMP, não só REST.",
         caseStudy: {
           problem:
             "A maioria dos projetos de portfólio para em CRUD via REST. Recrutadores perguntando \"você sabe WebSockets?\" precisam de uma resposta concreta, não teórica. Isso significou construir algo em que o estado em tempo real (presença, digitação, entrega) é o produto de fato, não um complemento.",
           solution:
-            "O PulseHub autentica conexões STOMP com o mesmo JWT usado no REST, e então envia mensagens privadas, indicadores de digitação e confirmações de leitura para filas por usuário, enquanto a presença é transmitida em um tópico público. As conversas suportam tanto 1:1 quanto grupos nomeados sob um único modelo unificado, as mensagens podem ser texto ou notas de voz gravadas no navegador, e as notificações chegam ao usuário mesmo com a aba fechada via Web Push real (VAPID), não só um toast dentro do app. Conversas diretas também podem iniciar uma chamada de vídeo 1:1 via WebRTC: o servidor só retransmite o handshake pelo STOMP, e áudio e vídeo trafegam direto entre os dois navegadores.",
+            "O PulseHub autentica conexões STOMP com o mesmo JWT usado no REST, e então envia mensagens privadas, indicadores de digitação e confirmações de leitura para filas por usuário, enquanto a presença é transmitida em um tópico público. As conversas suportam tanto 1:1 quanto grupos nomeados sob um único modelo unificado, as mensagens podem ser texto ou notas de voz gravadas no navegador, e as notificações chegam ao usuário mesmo com a aba fechada via Web Push real (VAPID), não só um toast dentro do app. Conversas diretas também podem iniciar uma chamada de vídeo 1:1 via WebRTC: o servidor só retransmite o handshake pelo STOMP, e áudio e vídeo trafegam direto entre os dois navegadores. A API escala horizontalmente: dois usuários podem estar com seus sockets em réplicas diferentes e tudo continua chegando, porque cada réplica publica os eventos de saída no Redis e entrega os que são das suas próprias conexões.",
           architecture:
-            "Backend em Spring Boot 3 + Java 21 com STOMP sobre SockJS para tudo em tempo real e REST protegido por JWT para o resto, PostgreSQL com Flyway para persistência. O frontend é React + TypeScript + Vite, dividindo o estado de forma deliberada: TanStack Query para tudo que é buscado uma vez e cacheado (contatos, histórico), Zustand para tudo que chega continuamente pelo socket (presença, digitação).",
+            "Backend em Spring Boot 3 + Java 21 com STOMP sobre SockJS para tudo em tempo real e REST protegido por JWT para o resto, PostgreSQL com Flyway para persistência. O frontend é React + TypeScript + Vite, dividindo o estado de forma deliberada: TanStack Query para tudo que é buscado uma vez e cacheado (contatos, histórico), Zustand para tudo que chega continuamente pelo socket (presença, digitação). No Docker Compose a API roda em duas réplicas atrás do nginx, que descobre as réplicas pelo DNS do Docker (uma terceira passa a receber tráfego sem reload) e mantém cada sessão SockJS em uma réplica só. O Redis pub/sub é o único caminho de entrega entre réplicas, e um lock curto no Redis impede que o job agendado de presença rode em todas ao mesmo tempo.",
           challenges: [
             {
               title: "Um único modelo de conversa para chat 1:1 e em grupo",
@@ -587,9 +595,15 @@ export const projects: Project[] = [
               description:
                 "Em vez de duplicar a lógica de persistir-transmitir-notificar para um novo tipo de mensagem, tanto o texto quanto as mensagens de voz gravadas no navegador passam pelo mesmo serviço de despacho, assim presença, notificações e entrega se comportam de forma idêntica independente do tipo de mensagem.",
             },
+            {
+              title: "Um WebSocket vive em um servidor só",
+              description:
+                "Com duas réplicas, a que processa uma mensagem pode não ser a que segura o socket do destinatário. O Redis não fala STOMP, então não dá para simplesmente trocar o broker por ele: cada réplica mantém seu broker em memória e todo evento de saída passa por um canal Redis que todas escutam. Um teste de ponta a ponta coloca dois navegadores reais em réplicas diferentes, confirma que mensagens, confirmações de leitura, digitação, presença e uma chamada de vídeo cruzam entre elas, e então derruba a réplica que segura o socket de um usuário no meio de uma chamada. O vídeo continua porque a mídia é ponto a ponto, o socket reconecta na réplica que sobrou e a chamada é encerrada por ela.",
+            },
           ],
           lessonsLearned: [
             "Sistemas em tempo real falham de formas que APIs REST não falham. Um bug de ordem de inicialização de provedor de segurança só apareceu ao subir a aplicação completa no Docker, não em testes unitários isolados. Testes verdes sozinhos não provam que uma stack em tempo real realmente sobe corretamente.",
+            "O mesmo valeu para a escala. Com todos os testes unitários verdes, a primeira execução com várias réplicas colocou todos os WebSockets na mesma réplica: o hash consistente do nginx trata os vários endereços atrás de um mesmo nome DNS como um servidor só. Só um teste que lia em qual réplica cada socket tinha realmente caído conseguiu pegar isso.",
             "Feito para completar um primeiro trio: arquitetura e CRUD (Social Supply), regras de negócio (CashPilot), comunicação em tempo real (PulseHub). Três competências diferentes, três respostas concretas para três perguntas diferentes de entrevista.",
           ],
         },

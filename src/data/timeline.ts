@@ -22,8 +22,8 @@ export const timeline: Record<Locale, TimelineItem[]> = {
     },
     {
       year: "2023",
-      title: "Systems Analysis and Development, Estácio",
-      description: "Degree in progress, with graduation expected in 2027.",
+      title: "Information Systems (Bachelor's), Estácio",
+      description: "In the final semester, with graduation expected in 2027.",
     },
     {
       year: "2024",
@@ -58,8 +58,8 @@ export const timeline: Record<Locale, TimelineItem[]> = {
     },
     {
       year: "2023",
-      title: "Análise e Desenvolvimento de Sistemas, Estácio",
-      description: "Graduação em andamento, com conclusão prevista para 2027.",
+      title: "Sistemas de Informação (Bacharelado), Estácio",
+      description: "No último período, com conclusão prevista para 2027.",
     },
     {
       year: "2024",

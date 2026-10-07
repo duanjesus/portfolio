@@ -61,7 +61,7 @@ export const strings: Record<Locale, UiStrings> = {
     about: {
       eyebrow: "About",
       paragraph:
-        "I'm a back-end developer focused on Java and Spring Boot, with experience in web systems, REST APIs, databases, messaging, and integration between services. My career also includes leadership and operations: at CEASA-RJ I headed the Social Supply sector, leading a team and coordinating supplies for Rio de Janeiro's public schools, as well as the donation logistics during the Rio Grande do Sul and Rio das Ostras floods. Dealing with those problems every day is what led me to build software that makes the work more organized and efficient. I'm studying Systems Analysis and Development at Estácio and speak fluent English, certified by Cultura Inglesa.",
+        "I'm a back-end developer focused on Java and Spring Boot, with experience in web systems, REST APIs, databases, messaging, and integration between services. My career also includes leadership and operations: at CEASA-RJ I headed the Social Supply sector, leading a team and coordinating supplies for Rio de Janeiro's public schools, as well as the donation logistics during the Rio Grande do Sul and Rio das Ostras floods. Dealing with those problems every day is what led me to build software that makes the work more organized and efficient. I'm in the final semester of a bachelor's degree in Information Systems at Estácio and speak fluent English, certified by Cultura Inglesa.",
     },
     githubActivity: {
       eyebrow: "GitHub Activity",
@@ -109,7 +109,7 @@ export const strings: Record<Locale, UiStrings> = {
     about: {
       eyebrow: "Sobre",
       paragraph:
-        "Sou desenvolvedor back-end com foco em Java e Spring Boot, com experiência em sistemas web, APIs REST, bancos de dados, mensageria e integração entre serviços. Minha trajetória também inclui liderança e gestão de operações: na CEASA-RJ, fui Chefe do Setor de Abastecimento Social, liderando equipes e coordenando o abastecimento das escolas públicas do Rio de Janeiro, além da logística de doações durante as enchentes do Rio Grande do Sul e de Rio das Ostras. Foi lidando com esses problemas no dia a dia que comecei a desenvolver soluções para tornar os processos mais organizados e eficientes. Curso Análise e Desenvolvimento de Sistemas na Estácio e tenho inglês fluente, com certificação pela Cultura Inglesa.",
+        "Sou desenvolvedor back-end com foco em Java e Spring Boot, com experiência em sistemas web, APIs REST, bancos de dados, mensageria e integração entre serviços. Minha trajetória também inclui liderança e gestão de operações: na CEASA-RJ, fui Chefe do Setor de Abastecimento Social, liderando equipes e coordenando o abastecimento das escolas públicas do Rio de Janeiro, além da logística de doações durante as enchentes do Rio Grande do Sul e de Rio das Ostras. Foi lidando com esses problemas no dia a dia que comecei a desenvolver soluções para tornar os processos mais organizados e eficientes. Estou no último período do bacharelado em Sistemas de Informação na Estácio e tenho inglês fluente, com certificação pela Cultura Inglesa.",
     },
     githubActivity: {
       eyebrow: "Atividade no GitHub",
