@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { FileDown } from "lucide-react";
 import { Section } from "../components/layout/Section";
-import { contactLinks } from "../data/contactLinks";
+import { contactLinks, resumeHref } from "../data/contactLinks";
 import { useLocale } from "../i18n/locale";
 import { strings } from "../i18n/strings";
 
@@ -9,7 +9,7 @@ export function Contact() {
   const locale = useLocale();
   const t = strings[locale].contact;
 
-  const links = [...contactLinks, { label: t.resumeLabel, value: t.resumeValue, href: "/resume.pdf", icon: FileDown }];
+  const links = [...contactLinks, { label: t.resumeLabel, value: t.resumeValue, href: resumeHref[locale], icon: FileDown }];
 
   return (
     <Section id="contact" tone="light">

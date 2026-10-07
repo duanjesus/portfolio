@@ -1,4 +1,7 @@
 import { Github, Linkedin, Mail, MessageCircle, type LucideIcon } from "lucide-react";
+import type { Locale } from "../i18n/locale";
+
+export const resumeHref: Record<Locale, string> = { en: "/resume.pdf", pt: "/curriculo.pdf" };
 
 export interface ContactLink {
   label: string;

@@ -4,6 +4,7 @@ import { Button } from "../components/ui/Button";
 import { useLocale } from "../i18n/locale";
 import { strings } from "../i18n/strings";
 import { projects } from "../data/projects";
+import { resumeHref } from "../data/contactLinks";
 
 const container = {
   hidden: {},
@@ -52,7 +53,7 @@ export function Hero() {
           <Button href={projectsHref} tone="dark" variant="primary" size="md">
             {t.viewProjects}
           </Button>
-          <Button href="/resume.pdf" tone="dark" variant="secondary" size="md">
+          <Button href={resumeHref[locale]} tone="dark" variant="secondary" size="md">
             {t.downloadResume}
           </Button>
         </motion.div>

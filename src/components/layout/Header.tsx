@@ -8,7 +8,7 @@ import { NavDropdown } from "../ui/NavDropdown";
 import { useLocale, otherLocalePath } from "../../i18n/locale";
 import { strings } from "../../i18n/strings";
 import { projects } from "../../data/projects";
-import { contactLinks } from "../../data/contactLinks";
+import { contactLinks, resumeHref } from "../../data/contactLinks";
 import { scrollToSection } from "../../lib/scrollToSection";
 
 export function Header() {
@@ -77,7 +77,7 @@ export function Header() {
             <CurrentFlag className="h-5 w-5" />
             {locale.toUpperCase()}
           </Link>
-          <Button href="/resume.pdf" variant="secondary" size="sm" tone="dark" className="hidden sm:inline-flex">
+          <Button href={resumeHref[locale]} variant="secondary" size="sm" tone="dark" className="hidden sm:inline-flex">
             {t.nav.resume}
           </Button>
           <button
@@ -102,7 +102,7 @@ export function Header() {
             className="overflow-hidden border-t border-white/10 bg-black md:hidden"
           >
             <div className="flex flex-col gap-6 px-6 py-6">
-              <Button href="/resume.pdf" variant="secondary" size="sm" tone="dark" className="w-full sm:hidden">
+              <Button href={resumeHref[locale]} variant="secondary" size="sm" tone="dark" className="w-full sm:hidden">
                 {t.nav.resume}
               </Button>
 

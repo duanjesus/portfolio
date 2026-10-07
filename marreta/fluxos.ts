@@ -116,10 +116,12 @@ const conferirLinksExternos: Fluxo = async (ctx) => {
 const baixarCurriculo: Fluxo = async (ctx) => {
   const { page, alvo, h } = ctx
   await entrarNoSite(ctx)
-  const link = page.locator('a[href$="resume.pdf"]').first()
+  // O arquivo muda com o idioma: resume.pdf em inglês, curriculo.pdf em português.
+  const link = page.locator('a[href$="resume.pdf"], a[href$="curriculo.pdf"]').first()
   await link.waitFor({ state: 'attached' })
   h.passo('baixar o currículo')
-  const resposta = await page.request.get(new URL('/resume.pdf', alvo.urls.site).href)
+  const arquivo = (await link.getAttribute('href')) ?? '/resume.pdf'
+  const resposta = await page.request.get(new URL(arquivo, alvo.urls.site).href)
   const tipo = resposta.headers()['content-type'] ?? ''
   if (resposta.status() !== 200 || !tipo.includes('pdf')) throw new Error(`O currículo não veio como PDF: HTTP ${resposta.status()}, tipo "${tipo}".`)
   await h.pausa()

@@ -52,6 +52,7 @@ import phDashboard from "../assets/screenshots/pulsehub/dashboard.png";
 import phChatDirect from "../assets/screenshots/pulsehub/chat-direct.png";
 import phChatGroup from "../assets/screenshots/pulsehub/chat-group.png";
 import phProfile from "../assets/screenshots/pulsehub/profile.png";
+import phCall from "../assets/screenshots/pulsehub/call-active.png";
 
 import tzCompleted from "../assets/screenshots/tenaz/viewer-completed.png";
 import tzCancelled from "../assets/screenshots/tenaz/viewer-cancelled.png";
@@ -84,6 +85,7 @@ export const projects: Project[] = [
       "PostgreSQL",
       "JDBC",
       "Spring Boot 3.3",
+      "Micrometer",
       "JUnit 5",
       "Testcontainers",
       "Maven",
@@ -102,7 +104,7 @@ export const projects: Project[] = [
           problem:
             "A business process that spans several steps, such as charging a card, waiting days for an approval, and then shipping, is easy to write and hard to make reliable. If the process dies between the charge and the shipment, something has to know that the charge already happened, that the three-day timer is still running, and where to resume. Hand-rolled solutions scatter that knowledge across status columns, cron jobs, and retry tables.",
           solution:
-            "Tenaz lets the process be written as ordinary Java and makes the code itself durable. Every workflow has an append-only history of events (step scheduled, step completed, timer fired, signal received), and nothing else is persisted: no stack, no variables. When an engine picks a workflow up, it runs the code from the top against that history, and every call the history already answers returns the recorded answer, so a charge that was journaled is never executed again. On top of that sit durable timers that hold no thread, signals, child workflows whose outcome reaches the parent atomically, cancellation that propagates to children, and a version marker for changing workflow code under executions in flight. A Spring Boot starter registers annotated workflow classes as beans, and a read-only history viewer shows every step, timer, and signal of each execution.",
+            "Tenaz lets the process be written as ordinary Java and makes the code itself durable. Every workflow has an append-only history of events (step scheduled, step completed, timer fired, signal received), and nothing else is persisted: no stack, no variables. When an engine picks a workflow up, it runs the code from the top against that history, and every call the history already answers returns the recorded answer, so a charge that was journaled is never executed again. On top of that sit durable timers that hold no thread, signals, child workflows whose outcome reaches the parent atomically, cancellation that propagates to children, and a version marker for changing workflow code under executions in flight. Steps can carry a timeout, signals can be made idempotent with a key, and finished workflows can be deleted after a retention period. A Spring Boot starter registers annotated workflow classes as beans and publishes the engine's activity as Micrometer metrics with a health indicator, and a read-only history viewer shows every step, timer, and signal of each execution.",
           architecture:
             "Three Maven modules: a core engine with no dependency on Spring, a Spring Boot starter, and an example order service. The journal is pluggable, with an in-memory implementation and a PostgreSQL one where an append is a single atomic statement, workers claim work in batches with FOR UPDATE SKIP LOCKED, and LISTEN/NOTIFY wakes them up. One engine owns a workflow at a time under a lease, and every write carries the lease epoch, so a worker that lost its lease to a crash or a long pause is rejected by the journal instead of corrupting the history. The engine never touches the clock, threads, or randomness directly: it gets them from a runtime interface, which is virtual threads and the wall clock in production and a single-threaded, seeded event loop under test.",
           challenges: [
@@ -124,7 +126,7 @@ export const projects: Project[] = [
           ],
           lessonsLearned: [
             "Determinism has to be designed in, not tested in. Once the engine got time, scheduling, and randomness only through one interface, simulating hours of faults in seconds became possible, and so did reproducing any failure from its seed.",
-            "Stating the limits is part of the engineering. The README lists what the engine does not guarantee (a step in flight during a crash runs at least once, signals are not deduplicated, the benchmarks come from one laptop) next to what it does.",
+            "Stating the limits is part of the engineering. The README lists what the engine does not guarantee (a step in flight during a crash runs at least once, a signal is deduplicated only when its sender gives it a key, the benchmarks come from one laptop) next to what it does.",
           ],
         },
       },
@@ -136,7 +138,7 @@ export const projects: Project[] = [
           problem:
             "Um processo de negócio com várias etapas, como cobrar um cartão, esperar dias por uma aprovação e depois enviar o pedido, é fácil de escrever e difícil de tornar confiável. Se o processo morre entre a cobrança e o envio, alguma coisa precisa saber que a cobrança já aconteceu, que o timer de três dias continua correndo e de onde retomar. Soluções feitas à mão espalham esse conhecimento por colunas de status, cron jobs e tabelas de retry.",
           solution:
-            "O Tenaz permite escrever o processo como Java comum e torna o próprio código durável. Cada workflow tem um histórico de eventos somente de acréscimo (etapa agendada, etapa concluída, timer disparado, sinal recebido), e nada mais é persistido: nem pilha, nem variáveis. Quando um motor assume um workflow, ele roda o código do início contra esse histórico, e toda chamada que o histórico já responde devolve a resposta gravada, então uma cobrança que foi registrada nunca é executada de novo. Em cima disso há timers duráveis que não ocupam thread, sinais, workflows filhos cujo resultado chega ao pai de forma atômica, cancelamento que se propaga para os filhos e um marcador de versão para mudar o código de um workflow com execuções em andamento. Um starter Spring Boot registra as classes anotadas como beans, e um visualizador de histórico somente leitura mostra cada etapa, timer e sinal de cada execução.",
+            "O Tenaz permite escrever o processo como Java comum e torna o próprio código durável. Cada workflow tem um histórico de eventos somente de acréscimo (etapa agendada, etapa concluída, timer disparado, sinal recebido), e nada mais é persistido: nem pilha, nem variáveis. Quando um motor assume um workflow, ele roda o código do início contra esse histórico, e toda chamada que o histórico já responde devolve a resposta gravada, então uma cobrança que foi registrada nunca é executada de novo. Em cima disso há timers duráveis que não ocupam thread, sinais, workflows filhos cujo resultado chega ao pai de forma atômica, cancelamento que se propaga para os filhos e um marcador de versão para mudar o código de um workflow com execuções em andamento. Etapas podem ter timeout, sinais podem ser idempotentes com uma chave, e workflows encerrados podem ser apagados depois de um prazo de retenção. Um starter Spring Boot registra as classes anotadas como beans e publica a atividade do motor como métricas Micrometer com um health indicator, e um visualizador de histórico somente leitura mostra cada etapa, timer e sinal de cada execução.",
           architecture:
             "Três módulos Maven: um núcleo sem dependência do Spring, um starter Spring Boot e um serviço de pedidos de exemplo. O journal é plugável, com uma implementação em memória e outra em PostgreSQL, em que um acréscimo é uma única instrução atômica, os workers pegam trabalho em lotes com FOR UPDATE SKIP LOCKED e são acordados por LISTEN/NOTIFY. Um motor por vez é dono de um workflow, sob um lease, e toda escrita carrega a época desse lease. Assim, um worker que perdeu o lease por uma queda ou uma pausa longa é rejeitado pelo journal em vez de corromper o histórico. O motor nunca acessa relógio, threads ou aleatoriedade diretamente: recebe tudo de uma interface de runtime, que em produção são virtual threads e o relógio real, e em teste é um event loop de uma thread só, guiado por uma semente.",
           challenges: [
@@ -158,7 +160,7 @@ export const projects: Project[] = [
           ],
           lessonsLearned: [
             "Determinismo precisa ser projetado, não testado depois. Quando o motor passou a receber tempo, agendamento e aleatoriedade por uma única interface, simular horas de falhas em segundos se tornou possível, assim como reproduzir qualquer falha a partir da semente.",
-            "Declarar os limites faz parte da engenharia. O README lista o que o motor não garante (uma etapa em andamento durante uma queda roda pelo menos uma vez, sinais não são deduplicados, os benchmarks vêm de um único notebook) ao lado do que ele garante.",
+            "Declarar os limites faz parte da engenharia. O README lista o que o motor não garante (uma etapa em andamento durante uma queda roda pelo menos uma vez, um sinal só é deduplicado quando quem envia informa uma chave, os benchmarks vêm de um único notebook) ao lado do que ele garante.",
           ],
         },
       },
@@ -176,6 +178,7 @@ export const projects: Project[] = [
       "Write-ahead log",
       "MVCC",
       "Cost-based planner",
+      "Volcano executor",
       "sqllogictest",
       "GitHub Actions",
     ],
@@ -190,12 +193,12 @@ export const projects: Project[] = [
       en: {
         tagline: "A relational SQL database written from scratch in Go, speaking the PostgreSQL wire protocol.",
         description:
-          "Every layer of a database built by hand, with no dependencies outside the Go standard library: the network protocol, the SQL parser, an on-disk B+tree storage engine, write-ahead logging with crash recovery, MVCC transactions, and a cost-based query planner. psql, pgx, and JDBC connect to it as if it were Postgres.",
+          "Every layer of a database built by hand, with no dependencies outside the Go standard library: the network protocol, the SQL parser, an on-disk B+tree storage engine, write-ahead logging with crash recovery, MVCC transactions, a cost-based query planner, and an executor with hash and merge joins whose memory stays bounded. psql, pgx, and JDBC connect to it as if it were Postgres.",
         caseStudy: {
           problem:
             "A database is the component most backend code trusts without looking inside. Reading about B+trees, write-ahead logs, and snapshot isolation explains what they are, but not why a commit is durable, why a reader never waits for a writer, or why one query plan is a thousand times faster than another. The goal was to find out by building every layer, with real clients on the other end to keep it honest.",
           solution:
-            "CapivaraDB implements PostgreSQL's wire protocol, so unmodified psql, pgx (Go), and pgjdbc (Java) connect to it. Behind the protocol sit a hand-written SQL parser and binder (joins, grouping, correlated subqueries, DDL), a storage engine of 8 kB checksummed pages with a buffer pool and clustered B+trees, a write-ahead log with ARIES-style recovery so a committed transaction survives the server being killed, multi-version concurrency control with read committed and repeatable read, deadlock detection and vacuum, and a planner that picks indexes and join order by cost from ANALYZE statistics, with EXPLAIN ANALYZE in PostgreSQL's format. Six of the seven planned milestones are done. The remaining one is the executor, so joins are still nested loops and set operations are missing.",
+            "CapivaraDB implements PostgreSQL's wire protocol, so unmodified psql, pgx (Go), and pgjdbc (Java) connect to it. Behind the protocol sit a hand-written SQL parser and binder (joins, grouping, correlated subqueries, DDL), a storage engine of 8 kB checksummed pages with a buffer pool and clustered B+trees, a write-ahead log with ARIES-style recovery so a committed transaction survives the server being killed, multi-version concurrency control with read committed and repeatable read, deadlock detection and vacuum, and a planner that picks indexes and join order by cost from ANALYZE statistics, with EXPLAIN ANALYZE in PostgreSQL's format. Queries run on an iterator executor with hash and merge joins, external sort, and set operations, and its memory is bounded by work_mem whatever the size of the data: sorts and hash joins that need more move to temporary files. All seven planned milestones are done.",
           architecture:
             "Three layers that meet at small interfaces: the protocol layer knows nothing about SQL, the engine knows nothing about sockets, and the storage layer only sees keys and values as byte strings. That boundary is what let the engine be replaced milestone by milestone, from a naive in-memory executor to B+trees on disk to MVCC, while the client compatibility tests kept passing. The core uses only the Go standard library, and CI fails if a dependency is added.",
           challenges: [
@@ -207,29 +210,29 @@ export const projects: Project[] = [
             {
               title: "Testing the tests",
               description:
-                "A crash test that passes proves little unless it would fail when the code is wrong. A mutation script breaks 25 durability, isolation, and planner rules one at a time, and the suite must catch each one. That found three blind spots in the crash tests while they were being written.",
+                "A crash test that passes proves little unless it would fail when the code is wrong. A mutation script breaks 42 durability, isolation, planner, and executor rules one at a time, and the suite must catch each one. That found three blind spots in the crash tests while they were being written.",
             },
             {
               title: "Compatibility measured, not claimed",
               description:
-                "Results are checked against sqllogictest: 109,414 records at 99.07% passing, with CI failing on any regression. The rate went down from 99.99% when two harder scripts, with joins of up to fifteen tables, joined the run. The planner took one of them from 51.5% in 217 seconds to 100% in 1 second.",
+                "Results are checked against sqllogictest: 109,414 records at 99.99% passing, with CI failing on any regression. Two of the scripts join up to fifteen tables, and before the planner most of their queries timed out. The planner took one of them from 51.5% in 217 seconds to 100% in 1 second, and the other reached 100% once the executor added UNION, EXCEPT, and INTERSECT.",
             },
           ],
           lessonsLearned: [
             "The boundary between layers mattered more than any single algorithm. Because the protocol and the engine only meet at four small interfaces, each milestone could replace what was underneath without breaking a client test.",
-            "A database that overstates what it guarantees is worse than useless, so the limitations are written down as carefully as the features: no true SERIALIZABLE, writes serialised by one lock, and nested-loop joins only until the last milestone lands.",
+            "A database that overstates what it guarantees is worse than useless, so the limitations are written down as carefully as the features: no true SERIALIZABLE, writes serialised by one lock, and execution one row at a time on a single core.",
           ],
         },
       },
       pt: {
         tagline: "Um banco de dados SQL relacional escrito do zero em Go, que fala o protocolo do PostgreSQL.",
         description:
-          "Todas as camadas de um banco de dados feitas à mão, sem dependências fora da biblioteca padrão do Go: o protocolo de rede, o parser SQL, um motor de armazenamento em B+tree no disco, write-ahead log com recuperação de falhas, transações MVCC e um planejador de consultas por custo. psql, pgx e JDBC se conectam a ele como se fosse um Postgres.",
+          "Todas as camadas de um banco de dados feitas à mão, sem dependências fora da biblioteca padrão do Go: o protocolo de rede, o parser SQL, um motor de armazenamento em B+tree no disco, write-ahead log com recuperação de falhas, transações MVCC, um planejador de consultas por custo e um executor com hash join e merge join com uso de memória limitado. psql, pgx e JDBC se conectam a ele como se fosse um Postgres.",
         caseStudy: {
           problem:
             "O banco de dados é o componente em que a maior parte do código de backend confia sem olhar por dentro. Ler sobre B+trees, write-ahead log e snapshot isolation explica o que são, mas não por que um commit é durável, por que um leitor nunca espera um escritor, ou por que um plano de consulta é mil vezes mais rápido que outro. O objetivo foi descobrir construindo cada camada, com clientes reais do outro lado para manter tudo honesto.",
           solution:
-            "O CapivaraDB implementa o protocolo de rede do PostgreSQL, então psql, pgx (Go) e pgjdbc (Java) se conectam a ele sem modificação. Atrás do protocolo há um parser e um binder SQL escritos à mão (joins, agrupamento, subconsultas correlacionadas, DDL), um motor de armazenamento com páginas de 8 kB com checksum, buffer pool e B+trees clusterizadas, um write-ahead log com recuperação no estilo ARIES, para que uma transação confirmada sobreviva à morte do servidor, controle de concorrência multiversão com read committed e repeatable read, detecção de deadlock e vacuum, e um planejador que escolhe índices e ordem de join por custo a partir das estatísticas do ANALYZE, com EXPLAIN ANALYZE no formato do PostgreSQL. Seis dos sete marcos planejados estão prontos. O que falta é o executor, então os joins ainda são nested loop e as operações de conjunto não existem.",
+            "O CapivaraDB implementa o protocolo de rede do PostgreSQL, então psql, pgx (Go) e pgjdbc (Java) se conectam a ele sem modificação. Atrás do protocolo há um parser e um binder SQL escritos à mão (joins, agrupamento, subconsultas correlacionadas, DDL), um motor de armazenamento com páginas de 8 kB com checksum, buffer pool e B+trees clusterizadas, um write-ahead log com recuperação no estilo ARIES, para que uma transação confirmada sobreviva à morte do servidor, controle de concorrência multiversão com read committed e repeatable read, detecção de deadlock e vacuum, e um planejador que escolhe índices e ordem de join por custo a partir das estatísticas do ANALYZE, com EXPLAIN ANALYZE no formato do PostgreSQL. As consultas rodam em um executor de iteradores com hash join, merge join, ordenação externa e operações de conjunto, e a memória é limitada pelo work_mem qualquer que seja o tamanho dos dados: ordenações e hash joins que precisam de mais passam a usar arquivos temporários. Os sete marcos planejados estão prontos.",
           architecture:
             "Três camadas que se encontram em interfaces pequenas: a camada de protocolo não sabe nada de SQL, o motor não sabe nada de sockets, e o armazenamento só enxerga chaves e valores como sequências de bytes. Essa fronteira é o que permitiu trocar o motor marco a marco, de um executor ingênuo em memória para B+trees em disco e depois MVCC, enquanto os testes de compatibilidade com clientes continuavam passando. O núcleo usa só a biblioteca padrão do Go, e o CI falha se uma dependência for adicionada.",
           challenges: [
@@ -241,85 +244,98 @@ export const projects: Project[] = [
             {
               title: "Testar os testes",
               description:
-                "Um teste de queda que passa prova pouco se ele não falharia com o código errado. Um script de mutação quebra 25 regras de durabilidade, isolamento e planejamento, uma de cada vez, e a suíte precisa pegar todas. Isso encontrou três pontos cegos nos testes de queda enquanto eles eram escritos.",
+                "Um teste de queda que passa prova pouco se ele não falharia com o código errado. Um script de mutação quebra 42 regras de durabilidade, isolamento, planejamento e execução, uma de cada vez, e a suíte precisa pegar todas. Isso encontrou três pontos cegos nos testes de queda enquanto eles eram escritos.",
             },
             {
               title: "Compatibilidade medida, não declarada",
               description:
-                "Os resultados são conferidos com o sqllogictest: 109.414 registros com 99,07% de acerto, e o CI falha em qualquer regressão. A taxa caiu de 99,99% quando dois scripts mais difíceis, com joins de até quinze tabelas, entraram na execução. O planejador levou um deles de 51,5% em 217 segundos para 100% em 1 segundo.",
+                "Os resultados são conferidos com o sqllogictest: 109.414 registros com 99,99% de acerto, e o CI falha em qualquer regressão. Dois dos scripts fazem joins de até quinze tabelas, e antes do planejador a maior parte das consultas deles estourava o tempo. O planejador levou um deles de 51,5% em 217 segundos para 100% em 1 segundo, e o outro chegou a 100% quando o executor ganhou UNION, EXCEPT e INTERSECT.",
             },
           ],
           lessonsLearned: [
             "A fronteira entre as camadas importou mais do que qualquer algoritmo isolado. Como o protocolo e o motor só se encontram em quatro interfaces pequenas, cada marco pôde trocar o que estava embaixo sem quebrar um teste de cliente.",
-            "Um banco que promete mais do que garante é pior do que inútil, então as limitações estão escritas com o mesmo cuidado que as funcionalidades: não há SERIALIZABLE de verdade, as escritas são serializadas por um único lock, e os joins são só nested loop até o último marco ficar pronto.",
+            "Um banco que promete mais do que garante é pior do que inútil, então as limitações estão escritas com o mesmo cuidado que as funcionalidades: não há SERIALIZABLE de verdade, as escritas são serializadas por um único lock, e a execução é linha a linha, em um único núcleo.",
           ],
         },
       },
     },
   },
   {
-    slug: "java-patterns-lab",
-    name: "Java Patterns Lab",
-    techStack: ["Java 21", "Maven", "JUnit 5"],
-    caseStudyTechStack: ["Java 21", "Maven", "JUnit 5", "Mermaid UML"],
-    githubUrl: "https://github.com/duanjesus/java-patterns-lab",
+    slug: "pulsequeue",
+    name: "PulseQueue",
+    techStack: ["Java 21", "Spring Boot 3", "RabbitMQ", "Redis", "React"],
+    caseStudyTechStack: [
+      "Java 21",
+      "Spring Boot 3",
+      "RabbitMQ",
+      "Redis",
+      "PostgreSQL",
+      "Flyway",
+      "React",
+      "TypeScript",
+      "Prometheus",
+      "Grafana",
+      "Spring Security",
+      "Testcontainers",
+    ],
+    githubUrl: "https://github.com/duanjesus/pulsequeue",
     screenshots: [],
     content: {
       en: {
-        tagline: "A worked catalog of classic Gang-of-Four design patterns.",
+        tagline: "Notification infrastructure other services publish to, not a notification CRUD app.",
         description:
-          "Sixteen GoF design patterns implemented against one shared e-commerce checkout domain, each with a problem/solution writeup, a UML diagram, runnable code, and a test proving the pattern's actual behavior.",
+          "A RabbitMQ-backed event pipeline with retry and dead-lettering, Redis dedup and rate-limiting, an API-key-guarded ingress, and full observability with Prometheus and Grafana, fanning events out to Email, Push, and real WebSocket delivery.",
         caseStudy: {
           problem:
-            "Most design-pattern tutorials show a pattern in isolation with a toy example unrelated to the last one, so nothing builds toward a coherent mental model of when to actually reach for each one.",
+            "Most notification features are built as a CRUD table bolted onto whichever service happens to need alerts first, which means every new service that wants to notify a user reinvents retry logic, dedup, and delivery channels from scratch.",
           solution:
-            "All 16 patterns (Strategy, Factory Method, Observer, Builder, Adapter, Decorator, Chain of Responsibility, Template Method, Command, Singleton, Abstract Factory, Facade, Proxy, Composite, State, Iterator) are implemented against the same e-commerce checkout domain (orders, payments, invoices, support tickets, reports, shipping, catalog), so the catalog reads as one coherent story. Every pattern ships with a problem/solution writeup and a Mermaid UML diagram that renders directly on GitHub, a runnable Demo class with a narrated main(), and a JUnit 5 test that asserts an actual behavioral difference, not just that the object compiles.",
+            "PulseQueue is the infrastructure layer other services publish to: any producer that can reach RabbitMQ with a valid API key hands off a domain event, such as expense.created or donation.created, or any future type, and walks away. PulseQueue owns everything from that point on: queueing, retrying with exponential backoff, dead-lettering what can't be delivered, deduplicating redeliveries, rate-limiting noisy producers, and fanning the event out to Email, Push, and a real WebSocket channel, all visible on a live Kibana-style ops dashboard. It ships standalone with its own event-simulation endpoint, but a real bridge already calls back into PulseHub to deliver actual chat messages.",
           architecture:
-            "Plain Java 21, Maven, no framework, no dependencies beyond JUnit 5, deliberately kept dependency-light so every example runs with nothing beyond mvn test. One self-contained package per pattern, mirrored by one test package; patterns don't import each other's classes even where the concept overlaps.",
+            "Spring Boot 3 + Java 21 backend: a topic exchange feeds a single queue, a stateless retry interceptor handles exponential backoff, and RabbitMQ's own dead-letter-exchange wiring takes over once retries are exhausted, no custom retry-tracking table needed. Redis backs both deduplication (check-before, mark-after-success, not claim-then-process) and per-source rate limiting. Every outcome persists to PostgreSQL via Flyway-managed migrations. The React + TypeScript dashboard polls REST stats via TanStack Query and subscribes to a STOMP topic for the live event feed, styled deliberately as a dark ops tool, not an admin CRUD panel. Prometheus scrapes custom Micrometer counters and a provisioned Grafana dashboard visualizes them. A Testcontainers integration test runs the whole pipeline against real PostgreSQL, RabbitMQ, and Redis containers.",
           challenges: [
             {
-              title: "One coherent domain instead of sixteen toy examples",
+              title: "Deduplication that doesn't cannibalize its own retries",
               description:
-                "Keeping every pattern's example genuinely tied to the same checkout domain, rather than falling back to unrelated animal or shape examples the moment a pattern didn't obviously fit, took deliberate design work per pattern, like modeling a shipping label and customs form pairing as Abstract Factory, or nested cart bundles as Composite.",
+                "Marking an event as processed before dispatch would make every in-process retry of a currently-failing delivery look like a duplicate of itself and get silently skipped instead of actually retrying. Fixed by only writing the Redis dedup key after the dispatch service actually succeeds.",
             },
             {
-              title: "Tests that prove behavior, not just compilation",
+              title: "A transaction boundary that was erasing its own failure records",
               description:
-                "Each JUnit 5 test asserts an actual behavioral difference the pattern produces, such as swapping a Strategy changing the computed total, or an invalid State transition being rejected, rather than simply instantiating the object, which is the more common shortcut in pattern demo repos.",
+                "Wrapping the whole processing method in one transactional call meant that rethrowing the triggering exception, needed for the retry interceptor to see the failure, rolled back the very 'this attempt failed' row meant to survive it. Fixed by recording outcomes through a separate bean where each write commits independently.",
             },
           ],
           lessonsLearned: [
-            "A shared domain across every example turns a reference catalog into something that reads start to finish, and makes it obvious which real-world problem each pattern actually solves.",
-            "Deliberately scoped to object-oriented design fundamentals with no framework in the way, the base that the CRUD, business-rule, real-time, and infrastructure projects in this portfolio build on.",
+            "Positioning this as infrastructure other services call, not a feature any one service owns, forced real interface discipline: one event contract, one publish path, and every consumer-side concern (retry, dedup, rate limit, fan-out) living entirely on this side of that boundary.",
+            "Built specifically to demonstrate message-queue and observability competency (RabbitMQ, Redis, Prometheus, Grafana) that the web applications in this portfolio do not cover.",
           ],
         },
       },
       pt: {
-        tagline: "Um catálogo comentado dos padrões clássicos de design GoF.",
+        tagline: "Infraestrutura de notificação para outros serviços publicarem, não um CRUD de notificações.",
         description:
-          "Dezesseis padrões de design GoF implementados sobre um único domínio de checkout de e-commerce compartilhado, cada um com problema/solução, diagrama UML, código executável e um teste que comprova o comportamento real do padrão.",
+          "Um pipeline de eventos com RabbitMQ, retry e dead-lettering, deduplicação e rate-limiting via Redis, uma entrada protegida por API key e observabilidade completa com Prometheus e Grafana, distribuindo eventos por Email, Push e entrega real via WebSocket.",
         caseStudy: {
           problem:
-            "A maioria dos tutoriais de padrões de design mostra cada padrão isolado, com um exemplo de brinquedo sem relação com o anterior, então nada constrói um modelo mental coerente de quando realmente usar cada um.",
+            "A maioria das funcionalidades de notificação é construída como uma tabela CRUD grudada no primeiro serviço que precisou de alertas, o que significa que cada novo serviço que quer notificar um usuário reinventa a lógica de retry, deduplicação e canais de entrega do zero.",
           solution:
-            "Os 16 padrões (Strategy, Factory Method, Observer, Builder, Adapter, Decorator, Chain of Responsibility, Template Method, Command, Singleton, Abstract Factory, Facade, Proxy, Composite, State, Iterator) são implementados sobre o mesmo domínio de checkout de e-commerce (pedidos, pagamentos, faturas, chamados de suporte, relatórios, envio, catálogo), então o catálogo lê como uma história coerente. Cada padrão vem com um texto de problema/solução e um diagrama UML em Mermaid que renderiza direto no GitHub, uma classe Demo executável com um main() narrado, e um teste JUnit 5 que verifica uma diferença de comportamento real, não só que o objeto compila.",
+            "O PulseQueue é a camada de infraestrutura que outros serviços usam: qualquer produtor que alcance o RabbitMQ com uma API key válida entrega um evento de domínio, como expense.created ou donation.created, ou qualquer tipo futuro, e segue em frente. A partir daí, o PulseQueue cuida de tudo: enfileiramento, retry com backoff exponencial, dead-lettering do que não pode ser entregue, deduplicação de reentregas, rate-limiting de produtores barulhentos, e distribuição do evento por Email, Push e um canal WebSocket real, tudo visível em um painel operacional ao vivo estilo Kibana. Funciona de forma standalone com seu próprio endpoint de simulação de eventos, mas já existe uma ponte real que chama o PulseHub de volta para entregar mensagens de chat de verdade.",
           architecture:
-            "Java 21 puro, Maven, sem framework, sem dependências além do JUnit 5, propositalmente leve em dependências para que todo exemplo rode só com mvn test. Um pacote independente por padrão, espelhado por um pacote de teste; os padrões não importam classes uns dos outros mesmo quando o conceito se sobrepõe.",
+            "Backend em Spring Boot 3 + Java 21: uma topic exchange alimenta uma única fila, um interceptor de retry sem estado cuida do backoff exponencial, e o próprio mecanismo de dead-letter-exchange do RabbitMQ assume quando as tentativas se esgotam, sem precisar de uma tabela customizada de rastreamento de retry. O Redis sustenta tanto a deduplicação (verificar antes, marcar depois do sucesso, não reservar e depois processar) quanto o rate-limiting por origem. Todo resultado é persistido no PostgreSQL via migrações gerenciadas pelo Flyway. O painel em React + TypeScript consulta estatísticas via REST com TanStack Query e assina um tópico STOMP para o feed de eventos ao vivo, estilizado deliberadamente como uma ferramenta operacional escura, não um painel CRUD administrativo. O Prometheus coleta contadores customizados via Micrometer e um dashboard Grafana provisionado os visualiza. Um teste de integração com Testcontainers roda o pipeline inteiro contra contêineres reais de PostgreSQL, RabbitMQ e Redis.",
           challenges: [
             {
-              title: "Um domínio coerente em vez de dezesseis exemplos soltos",
+              title: "Deduplicação que não devora suas próprias tentativas de retry",
               description:
-                "Manter o exemplo de cada padrão genuinamente ligado ao mesmo domínio de checkout, em vez de recorrer a exemplos de animais ou formas geométricas assim que um padrão não se encaixava obviamente, exigiu trabalho de design deliberado por padrão, como modelar o par etiqueta de envio e formulário aduaneiro como Abstract Factory, ou pacotes de carrinho aninhados como Composite.",
+                "Marcar um evento como processado antes do envio faria com que cada nova tentativa de uma entrega que ainda está falhando parecesse uma duplicata de si mesma e fosse silenciosamente ignorada em vez de realmente tentada de novo. Corrigido escrevendo a chave de deduplicação no Redis só depois que o serviço de despacho realmente tem sucesso.",
             },
             {
-              title: "Testes que provam comportamento, não só compilação",
+              title: "Um limite de transação que apagava seus próprios registros de falha",
               description:
-                "Cada teste JUnit 5 verifica uma diferença de comportamento real que o padrão produz, como trocar uma Strategy mudando o total calculado, ou uma transição de State inválida sendo rejeitada, em vez de só instanciar o objeto, que é o atalho mais comum em repositórios de demonstração de padrões.",
+                "Envolver todo o método de processamento em uma única transação fazia com que relançar a exceção que disparou a falha, necessário para o interceptor de retry enxergar o problema, desfizesse justamente a linha 'essa tentativa falhou' que deveria sobreviver a isso. Corrigido registrando os resultados através de um bean separado, onde cada escrita é confirmada independentemente.",
             },
           ],
           lessonsLearned: [
-            "Um domínio compartilhado em todos os exemplos transforma um catálogo de referência em algo que se lê do início ao fim, e deixa claro qual problema do mundo real cada padrão realmente resolve.",
-            "Propositalmente dimensionado para fundamentos de design orientado a objetos, sem framework no caminho: a base sobre a qual os projetos de CRUD, regras de negócio, tempo real e infraestrutura deste portfólio são construídos.",
+            "Posicionar isso como infraestrutura que outros serviços chamam, e não uma funcionalidade que um serviço qualquer possui, forçou disciplina real de interface: um único contrato de evento, um único caminho de publicação, e toda preocupação do lado consumidor (retry, dedup, rate limit, distribuição) vivendo inteiramente desse lado da fronteira.",
+            "Feito especificamente para demonstrar competência em filas de mensagens e observabilidade (RabbitMQ, Redis, Prometheus, Grafana) que as aplicações web deste portfólio não cobrem.",
           ],
         },
       },
@@ -328,8 +344,19 @@ export const projects: Project[] = [
   {
     slug: "social-supply",
     name: "Social Supply Management",
-    techStack: ["Java 21", "Spring Boot 3", "PostgreSQL", "JWT", "React", "TypeScript", "Docker"],
-    caseStudyTechStack: ["Java 21", "Spring Boot 3.3", "PostgreSQL 16", "JWT", "React 18", "TypeScript", "Docker"],
+    techStack: ["Java 21", "Spring Boot 3", "PostgreSQL", "React", "TypeScript", "Docker", "Terraform", "AWS EC2"],
+    caseStudyTechStack: [
+      "Java 21",
+      "Spring Boot 3.3",
+      "PostgreSQL 16",
+      "JWT",
+      "React 18",
+      "TypeScript",
+      "Docker",
+      "Terraform",
+      "AWS EC2",
+      "GitHub Actions",
+    ],
     githubUrl: "https://github.com/duanjesus/social-supply-management-api",
     screenshots: [
       { src: ssDashboard, alt: "Social Supply dashboard with stats, low-stock alerts and a 6-month trend" },
@@ -345,11 +372,11 @@ export const projects: Project[] = [
           "A full-stack system for institutions to register, receive donations, track inventory, and distribute food to families in vulnerable situations. Built as a monorepo with a Spring Boot 3 REST API and a React SPA.",
         caseStudy: {
           problem:
-            "Social assistance programs coordinate dozens of partner institutions, hundreds of donated products, and recurring distributions to families in vulnerable situations. Much of it is tracked manually across spreadsheets, with no single source of truth for what's in stock, what's been distributed, or which institutions are under-served.",
+            "This system came out of the day-to-day of the Social Supply sector at CEASA-RJ, where I was head of the sector. Social assistance programs coordinate dozens of partner institutions, hundreds of donated products, and recurring distributions to families in vulnerable situations. Much of it is tracked manually across spreadsheets, with no single source of truth for what's in stock, what's been distributed, or which institutions are under-served.",
           solution:
             "A monorepo application covering the full lifecycle: institutions register, donations enter the inventory, and distributions flow back out to institutions. Stock balances are computed live from the donation/distribution ledger rather than stored redundantly, so the dashboard's low-stock alerts and 6-month trend are always consistent with the underlying transactions. A dedicated reports module lets staff filter by period and institution and export to PDF or CSV for offline records.",
           architecture:
-            "Spring Boot 3 REST API with a layered architecture (controller → service → repository), JWT-based authentication, and PostgreSQL persistence, paired with a React + TypeScript SPA that consumes it. Both halves live in one monorepo (backend/, frontend/) and ship together via Docker Compose.",
+            "Spring Boot 3 REST API with a layered architecture (controller → service → repository), JWT-based authentication, and PostgreSQL persistence, paired with a React + TypeScript SPA that consumes it. Both halves live in one monorepo (backend/, frontend/) and ship together via Docker Compose. The infrastructure is in the repository too: Terraform provisions a single AWS EC2 instance that runs the same Docker Compose file, and a GitHub Actions workflow redeploys it after every successful CI run on main.",
           challenges: [
             {
               title: "Keeping stock numbers trustworthy",
@@ -374,11 +401,11 @@ export const projects: Project[] = [
           "Um sistema completo para cadastrar instituições, receber doações, controlar estoque e distribuir alimentos para famílias em situação de vulnerabilidade. Construído como um monorepo com uma API REST em Spring Boot 3 e um SPA em React.",
         caseStudy: {
           problem:
-            "Programas de assistência social coordenam dezenas de instituições parceiras, centenas de produtos doados e distribuições recorrentes para famílias em situação de vulnerabilidade. Muito disso é controlado manualmente em planilhas, sem uma fonte única de verdade sobre o que está em estoque, o que já foi distribuído ou quais instituições estão sendo pouco atendidas.",
+            "Este sistema nasceu da rotina do Setor de Abastecimento Social da CEASA-RJ, que chefiei. Programas de assistência social coordenam dezenas de instituições parceiras, centenas de produtos doados e distribuições recorrentes para famílias em situação de vulnerabilidade. Muito disso é controlado manualmente em planilhas, sem uma fonte única de verdade sobre o que está em estoque, o que já foi distribuído ou quais instituições estão sendo pouco atendidas.",
           solution:
             "Uma aplicação em monorepo que cobre o ciclo completo: instituições se cadastram, doações entram no estoque e distribuições saem de volta para as instituições. Os saldos de estoque são calculados em tempo real a partir do histórico de doações/distribuições, em vez de armazenados de forma redundante. Assim, os alertas de estoque baixo e a tendência de 6 meses no dashboard sempre batem com as transações reais. Um módulo de relatórios dedicado permite filtrar por período e instituição, com exportação em PDF ou CSV.",
           architecture:
-            "API REST em Spring Boot 3 com arquitetura em camadas (controller → service → repository), autenticação via JWT e persistência em PostgreSQL, junto com um SPA em React + TypeScript que consome essa API. As duas partes vivem em um único monorepo (backend/, frontend/) e sobem juntas via Docker Compose.",
+            "API REST em Spring Boot 3 com arquitetura em camadas (controller → service → repository), autenticação via JWT e persistência em PostgreSQL, junto com um SPA em React + TypeScript que consome essa API. As duas partes vivem em um único monorepo (backend/, frontend/) e sobem juntas via Docker Compose. A infraestrutura também está no repositório: o Terraform provisiona uma única instância AWS EC2 que roda o mesmo Docker Compose, e um workflow do GitHub Actions refaz o deploy a cada execução bem-sucedida do CI na main.",
           challenges: [
             {
               title: "Manter os números de estoque confiáveis",
@@ -486,13 +513,14 @@ export const projects: Project[] = [
   {
     slug: "pulsehub",
     name: "PulseHub",
-    techStack: ["Java 21", "Spring Boot 3", "WebSocket/STOMP", "PostgreSQL", "React", "TypeScript", "Zustand"],
+    techStack: ["Java 21", "Spring Boot 3", "WebSocket/STOMP", "WebRTC", "PostgreSQL", "React", "TypeScript"],
     caseStudyTechStack: [
       "Java 21",
       "Spring Boot 3",
       "STOMP",
       "WebSocket",
       "SockJS",
+      "WebRTC",
       "PostgreSQL",
       "React",
       "TypeScript",
@@ -504,18 +532,19 @@ export const projects: Project[] = [
       { src: phDashboard, alt: "PulseHub dashboard" },
       { src: phChatDirect, alt: "Direct message conversation" },
       { src: phChatGroup, alt: "Group conversation" },
+      { src: phCall, alt: "1:1 video call over WebRTC with local preview and call controls" },
       { src: phProfile, alt: "User profile page" },
     ],
     content: {
       en: {
         tagline: "Real-time chat built on WebSockets and STOMP.",
         description:
-          "A real-time communication platform with private and group messaging, typing indicators, presence, read receipts, voice messages, and Web Push notifications, built to prove hands-on WebSocket/STOMP experience, not just REST.",
+          "A real-time communication platform with private and group messaging, typing indicators, presence, read receipts, voice messages, 1:1 video calls over WebRTC, and Web Push notifications, built to prove hands-on WebSocket/STOMP experience, not just REST.",
         caseStudy: {
           problem:
             "Most portfolio projects stop at REST CRUD. Recruiters asking \"do you know WebSockets?\" need a concrete answer, not a theoretical one. That meant building something where real-time state (presence, typing, delivery) is the actual product, not a bolt-on feature.",
           solution:
-            "PulseHub authenticates STOMP connections with the same JWT used over REST, then pushes private messages, typing indicators, and read receipts to per-user queues while presence broadcasts to a public topic. Conversations support both 1:1 and named groups under one unified model, messages can be text or in-browser-recorded voice notes, and notifications reach the user even with the tab closed via real Web Push (VAPID), not just an in-app toast.",
+            "PulseHub authenticates STOMP connections with the same JWT used over REST, then pushes private messages, typing indicators, and read receipts to per-user queues while presence broadcasts to a public topic. Conversations support both 1:1 and named groups under one unified model, messages can be text or in-browser-recorded voice notes, and notifications reach the user even with the tab closed via real Web Push (VAPID), not just an in-app toast. Direct chats can also start a 1:1 video call over WebRTC: the server only relays the handshake through STOMP, and audio and video flow directly between the two browsers.",
           architecture:
             "Spring Boot 3 + Java 21 backend with STOMP over SockJS for everything real-time and JWT-secured REST for everything else, PostgreSQL with Flyway for persistence. Frontend is React + TypeScript + Vite, deliberately splitting state: TanStack Query for anything fetched-once-and-cached (contacts, history), Zustand for anything arriving continuously over the socket (presence, typing).",
           challenges: [
@@ -539,12 +568,12 @@ export const projects: Project[] = [
       pt: {
         tagline: "Chat em tempo real construído com WebSockets e STOMP.",
         description:
-          "Uma plataforma de comunicação em tempo real com mensagens privadas e em grupo, indicador de digitação, presença, confirmação de leitura, mensagens de voz e notificações push, construída para provar experiência prática com WebSocket/STOMP, não só REST.",
+          "Uma plataforma de comunicação em tempo real com mensagens privadas e em grupo, indicador de digitação, presença, confirmação de leitura, mensagens de voz, chamadas de vídeo 1:1 via WebRTC e notificações push, construída para provar experiência prática com WebSocket/STOMP, não só REST.",
         caseStudy: {
           problem:
             "A maioria dos projetos de portfólio para em CRUD via REST. Recrutadores perguntando \"você sabe WebSockets?\" precisam de uma resposta concreta, não teórica. Isso significou construir algo em que o estado em tempo real (presença, digitação, entrega) é o produto de fato, não um complemento.",
           solution:
-            "O PulseHub autentica conexões STOMP com o mesmo JWT usado no REST, e então envia mensagens privadas, indicadores de digitação e confirmações de leitura para filas por usuário, enquanto a presença é transmitida em um tópico público. As conversas suportam tanto 1:1 quanto grupos nomeados sob um único modelo unificado, as mensagens podem ser texto ou notas de voz gravadas no navegador, e as notificações chegam ao usuário mesmo com a aba fechada via Web Push real (VAPID), não só um toast dentro do app.",
+            "O PulseHub autentica conexões STOMP com o mesmo JWT usado no REST, e então envia mensagens privadas, indicadores de digitação e confirmações de leitura para filas por usuário, enquanto a presença é transmitida em um tópico público. As conversas suportam tanto 1:1 quanto grupos nomeados sob um único modelo unificado, as mensagens podem ser texto ou notas de voz gravadas no navegador, e as notificações chegam ao usuário mesmo com a aba fechada via Web Push real (VAPID), não só um toast dentro do app. Conversas diretas também podem iniciar uma chamada de vídeo 1:1 via WebRTC: o servidor só retransmite o handshake pelo STOMP, e áudio e vídeo trafegam direto entre os dois navegadores.",
           architecture:
             "Backend em Spring Boot 3 + Java 21 com STOMP sobre SockJS para tudo em tempo real e REST protegido por JWT para o resto, PostgreSQL com Flyway para persistência. O frontend é React + TypeScript + Vite, dividindo o estado de forma deliberada: TanStack Query para tudo que é buscado uma vez e cacheado (contatos, histórico), Zustand para tudo que chega continuamente pelo socket (presença, digitação).",
           challenges: [
@@ -562,85 +591,6 @@ export const projects: Project[] = [
           lessonsLearned: [
             "Sistemas em tempo real falham de formas que APIs REST não falham. Um bug de ordem de inicialização de provedor de segurança só apareceu ao subir a aplicação completa no Docker, não em testes unitários isolados. Testes verdes sozinhos não provam que uma stack em tempo real realmente sobe corretamente.",
             "Feito para completar um primeiro trio: arquitetura e CRUD (Social Supply), regras de negócio (CashPilot), comunicação em tempo real (PulseHub). Três competências diferentes, três respostas concretas para três perguntas diferentes de entrevista.",
-          ],
-        },
-      },
-    },
-  },
-  {
-    slug: "pulsequeue",
-    name: "PulseQueue",
-    techStack: ["Java 21", "Spring Boot 3", "RabbitMQ", "Redis", "React"],
-    caseStudyTechStack: [
-      "Java 21",
-      "Spring Boot 3",
-      "RabbitMQ",
-      "Redis",
-      "PostgreSQL",
-      "Flyway",
-      "React",
-      "TypeScript",
-      "Prometheus",
-      "Grafana",
-    ],
-    githubUrl: "https://github.com/duanjesus/pulsequeue",
-    screenshots: [],
-    content: {
-      en: {
-        tagline: "Notification infrastructure other services publish to, not a notification CRUD app.",
-        description:
-          "A RabbitMQ-backed event pipeline with retry and dead-lettering, Redis dedup and rate-limiting, an API-key-guarded ingress, and full observability with Prometheus and Grafana, fanning events out to Email, Push, and real WebSocket delivery.",
-        caseStudy: {
-          problem:
-            "Most notification features are built as a CRUD table bolted onto whichever service happens to need alerts first, which means every new service that wants to notify a user reinvents retry logic, dedup, and delivery channels from scratch.",
-          solution:
-            "PulseQueue is the infrastructure layer other services publish to: any producer that can reach RabbitMQ with a valid API key hands off a domain event, such as expense.created or donation.created, or any future type, and walks away. PulseQueue owns everything from that point on: queueing, retrying with exponential backoff, dead-lettering what can't be delivered, deduplicating redeliveries, rate-limiting noisy producers, and fanning the event out to Email, Push, and a real WebSocket channel, all visible on a live Kibana-style ops dashboard. It ships standalone with its own event-simulation endpoint, but a real bridge already calls back into PulseHub to deliver actual chat messages.",
-          architecture:
-            "Spring Boot 3 + Java 21 backend: a topic exchange feeds a single queue, a stateless retry interceptor handles exponential backoff, and RabbitMQ's own dead-letter-exchange wiring takes over once retries are exhausted, no custom retry-tracking table needed. Redis backs both deduplication (check-before, mark-after-success, not claim-then-process) and per-source rate limiting. Every outcome persists to PostgreSQL via Flyway-managed migrations. The React + TypeScript dashboard polls REST stats via TanStack Query and subscribes to a STOMP topic for the live event feed, styled deliberately as a dark ops tool, not an admin CRUD panel. Prometheus scrapes custom Micrometer counters and a provisioned Grafana dashboard visualizes them.",
-          challenges: [
-            {
-              title: "Deduplication that doesn't cannibalize its own retries",
-              description:
-                "Marking an event as processed before dispatch would make every in-process retry of a currently-failing delivery look like a duplicate of itself and get silently skipped instead of actually retrying. Fixed by only writing the Redis dedup key after the dispatch service actually succeeds.",
-            },
-            {
-              title: "A transaction boundary that was erasing its own failure records",
-              description:
-                "Wrapping the whole processing method in one transactional call meant that rethrowing the triggering exception, needed for the retry interceptor to see the failure, rolled back the very 'this attempt failed' row meant to survive it. Fixed by recording outcomes through a separate bean where each write commits independently.",
-            },
-          ],
-          lessonsLearned: [
-            "Positioning this as infrastructure other services call, not a feature any one service owns, forced real interface discipline: one event contract, one publish path, and every consumer-side concern (retry, dedup, rate limit, fan-out) living entirely on this side of that boundary.",
-            "Built specifically to demonstrate message-queue and observability competency (RabbitMQ, Redis, Prometheus, Grafana) that the web applications in this portfolio do not cover.",
-          ],
-        },
-      },
-      pt: {
-        tagline: "Infraestrutura de notificação para outros serviços publicarem, não um CRUD de notificações.",
-        description:
-          "Um pipeline de eventos com RabbitMQ, retry e dead-lettering, deduplicação e rate-limiting via Redis, uma entrada protegida por API key e observabilidade completa com Prometheus e Grafana, distribuindo eventos por Email, Push e entrega real via WebSocket.",
-        caseStudy: {
-          problem:
-            "A maioria das funcionalidades de notificação é construída como uma tabela CRUD grudada no primeiro serviço que precisou de alertas, o que significa que cada novo serviço que quer notificar um usuário reinventa a lógica de retry, deduplicação e canais de entrega do zero.",
-          solution:
-            "O PulseQueue é a camada de infraestrutura que outros serviços usam: qualquer produtor que alcance o RabbitMQ com uma API key válida entrega um evento de domínio, como expense.created ou donation.created, ou qualquer tipo futuro, e segue em frente. A partir daí, o PulseQueue cuida de tudo: enfileiramento, retry com backoff exponencial, dead-lettering do que não pode ser entregue, deduplicação de reentregas, rate-limiting de produtores barulhentos, e distribuição do evento por Email, Push e um canal WebSocket real, tudo visível em um painel operacional ao vivo estilo Kibana. Funciona de forma standalone com seu próprio endpoint de simulação de eventos, mas já existe uma ponte real que chama o PulseHub de volta para entregar mensagens de chat de verdade.",
-          architecture:
-            "Backend em Spring Boot 3 + Java 21: uma topic exchange alimenta uma única fila, um interceptor de retry sem estado cuida do backoff exponencial, e o próprio mecanismo de dead-letter-exchange do RabbitMQ assume quando as tentativas se esgotam, sem precisar de uma tabela customizada de rastreamento de retry. O Redis sustenta tanto a deduplicação (verificar antes, marcar depois do sucesso, não reservar e depois processar) quanto o rate-limiting por origem. Todo resultado é persistido no PostgreSQL via migrações gerenciadas pelo Flyway. O painel em React + TypeScript consulta estatísticas via REST com TanStack Query e assina um tópico STOMP para o feed de eventos ao vivo, estilizado deliberadamente como uma ferramenta operacional escura, não um painel CRUD administrativo. O Prometheus coleta contadores customizados via Micrometer e um dashboard Grafana provisionado os visualiza.",
-          challenges: [
-            {
-              title: "Deduplicação que não devora suas próprias tentativas de retry",
-              description:
-                "Marcar um evento como processado antes do envio faria com que cada nova tentativa de uma entrega que ainda está falhando parecesse uma duplicata de si mesma e fosse silenciosamente ignorada em vez de realmente tentada de novo. Corrigido escrevendo a chave de deduplicação no Redis só depois que o serviço de despacho realmente tem sucesso.",
-            },
-            {
-              title: "Um limite de transação que apagava seus próprios registros de falha",
-              description:
-                "Envolver todo o método de processamento em uma única transação fazia com que relançar a exceção que disparou a falha, necessário para o interceptor de retry enxergar o problema, desfizesse justamente a linha 'essa tentativa falhou' que deveria sobreviver a isso. Corrigido registrando os resultados através de um bean separado, onde cada escrita é confirmada independentemente.",
-            },
-          ],
-          lessonsLearned: [
-            "Posicionar isso como infraestrutura que outros serviços chamam, e não uma funcionalidade que um serviço qualquer possui, forçou disciplina real de interface: um único contrato de evento, um único caminho de publicação, e toda preocupação do lado consumidor (retry, dedup, rate limit, distribuição) vivendo inteiramente desse lado da fronteira.",
-            "Feito especificamente para demonstrar competência em filas de mensagens e observabilidade (RabbitMQ, Redis, Prometheus, Grafana) que as aplicações web deste portfólio não cobrem.",
           ],
         },
       },
@@ -717,6 +667,74 @@ export const projects: Project[] = [
           lessonsLearned: [
             "Ser explícito sobre o que é dado oficial do governo versus uma estimativa documentada, tanto no catálogo de veículos quanto na base de pedágios, importou mais para a correção do que qualquer algoritmo isolado do app. A maior parte do esforço de engenharia foi buscar e verificar dado, não calcular em cima dele.",
             "O único projeto mobile do portfólio, escolhido para mostrar entrega multiplataforma (Flutter, Windows e Android a partir de um único código) e integração de dados externos em larga escala, complementando as competências de backend e web que os outros projetos já cobrem.",
+          ],
+        },
+      },
+    },
+  },
+  {
+    slug: "java-patterns-lab",
+    name: "Java Patterns Lab",
+    techStack: ["Java 21", "Maven", "JUnit 5"],
+    caseStudyTechStack: ["Java 21", "Maven", "JUnit 5", "Mermaid UML"],
+    githubUrl: "https://github.com/duanjesus/java-patterns-lab",
+    screenshots: [],
+    content: {
+      en: {
+        tagline: "A worked catalog of classic Gang-of-Four design patterns.",
+        description:
+          "Sixteen GoF design patterns implemented against one shared e-commerce checkout domain, each with a problem/solution writeup, a UML diagram, runnable code, and a test proving the pattern's actual behavior.",
+        caseStudy: {
+          problem:
+            "Most design-pattern tutorials show a pattern in isolation with a toy example unrelated to the last one, so nothing builds toward a coherent mental model of when to actually reach for each one.",
+          solution:
+            "All 16 patterns (Strategy, Factory Method, Observer, Builder, Adapter, Decorator, Chain of Responsibility, Template Method, Command, Singleton, Abstract Factory, Facade, Proxy, Composite, State, Iterator) are implemented against the same e-commerce checkout domain (orders, payments, invoices, support tickets, reports, shipping, catalog), so the catalog reads as one coherent story. Every pattern ships with a problem/solution writeup and a Mermaid UML diagram that renders directly on GitHub, a runnable Demo class with a narrated main(), and a JUnit 5 test that asserts an actual behavioral difference, not just that the object compiles.",
+          architecture:
+            "Plain Java 21, Maven, no framework, no dependencies beyond JUnit 5, deliberately kept dependency-light so every example runs with nothing beyond mvn test. One self-contained package per pattern, mirrored by one test package; patterns don't import each other's classes even where the concept overlaps.",
+          challenges: [
+            {
+              title: "One coherent domain instead of sixteen toy examples",
+              description:
+                "Keeping every pattern's example genuinely tied to the same checkout domain, rather than falling back to unrelated animal or shape examples the moment a pattern didn't obviously fit, took deliberate design work per pattern, like modeling a shipping label and customs form pairing as Abstract Factory, or nested cart bundles as Composite.",
+            },
+            {
+              title: "Tests that prove behavior, not just compilation",
+              description:
+                "Each JUnit 5 test asserts an actual behavioral difference the pattern produces, such as swapping a Strategy changing the computed total, or an invalid State transition being rejected, rather than simply instantiating the object, which is the more common shortcut in pattern demo repos.",
+            },
+          ],
+          lessonsLearned: [
+            "A shared domain across every example turns a reference catalog into something that reads start to finish, and makes it obvious which real-world problem each pattern actually solves.",
+            "Deliberately scoped to object-oriented design fundamentals with no framework in the way, the base that the CRUD, business-rule, real-time, and infrastructure projects in this portfolio build on.",
+          ],
+        },
+      },
+      pt: {
+        tagline: "Um catálogo comentado dos padrões clássicos de design GoF.",
+        description:
+          "Dezesseis padrões de design GoF implementados sobre um único domínio de checkout de e-commerce compartilhado, cada um com problema/solução, diagrama UML, código executável e um teste que comprova o comportamento real do padrão.",
+        caseStudy: {
+          problem:
+            "A maioria dos tutoriais de padrões de design mostra cada padrão isolado, com um exemplo de brinquedo sem relação com o anterior, então nada constrói um modelo mental coerente de quando realmente usar cada um.",
+          solution:
+            "Os 16 padrões (Strategy, Factory Method, Observer, Builder, Adapter, Decorator, Chain of Responsibility, Template Method, Command, Singleton, Abstract Factory, Facade, Proxy, Composite, State, Iterator) são implementados sobre o mesmo domínio de checkout de e-commerce (pedidos, pagamentos, faturas, chamados de suporte, relatórios, envio, catálogo), então o catálogo lê como uma história coerente. Cada padrão vem com um texto de problema/solução e um diagrama UML em Mermaid que renderiza direto no GitHub, uma classe Demo executável com um main() narrado, e um teste JUnit 5 que verifica uma diferença de comportamento real, não só que o objeto compila.",
+          architecture:
+            "Java 21 puro, Maven, sem framework, sem dependências além do JUnit 5, propositalmente leve em dependências para que todo exemplo rode só com mvn test. Um pacote independente por padrão, espelhado por um pacote de teste; os padrões não importam classes uns dos outros mesmo quando o conceito se sobrepõe.",
+          challenges: [
+            {
+              title: "Um domínio coerente em vez de dezesseis exemplos soltos",
+              description:
+                "Manter o exemplo de cada padrão genuinamente ligado ao mesmo domínio de checkout, em vez de recorrer a exemplos de animais ou formas geométricas assim que um padrão não se encaixava obviamente, exigiu trabalho de design deliberado por padrão, como modelar o par etiqueta de envio e formulário aduaneiro como Abstract Factory, ou pacotes de carrinho aninhados como Composite.",
+            },
+            {
+              title: "Testes que provam comportamento, não só compilação",
+              description:
+                "Cada teste JUnit 5 verifica uma diferença de comportamento real que o padrão produz, como trocar uma Strategy mudando o total calculado, ou uma transição de State inválida sendo rejeitada, em vez de só instanciar o objeto, que é o atalho mais comum em repositórios de demonstração de padrões.",
+            },
+          ],
+          lessonsLearned: [
+            "Um domínio compartilhado em todos os exemplos transforma um catálogo de referência em algo que se lê do início ao fim, e deixa claro qual problema do mundo real cada padrão realmente resolve.",
+            "Propositalmente dimensionado para fundamentos de design orientado a objetos, sem framework no caminho: a base sobre a qual os projetos de CRUD, regras de negócio, tempo real e infraestrutura deste portfólio são construídos.",
           ],
         },
       },
